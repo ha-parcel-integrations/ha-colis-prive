@@ -90,11 +90,16 @@ carrier; it validates the postcode length and picks the timezone.
   the language, even when the fallback succeeds, so the missing sentence
   surfaces. A new sentence goes into all three tables together, from a real
   capture.
-- **Fields that are `None`:** `receiver`, `planned_from`, `planned_to`,
-  `weight`, `dimensions` on purpose; `pickup_point` until a pickup-point
-  parcel has been seen (it is in `PENDING_CAPABILITIES`). `CAPABILITIES` is
-  `url` and `history`. The delivery-time event and the calendar therefore
-  never produce anything.
+- **Delivery window.** Only while `out_for_delivery`: `planned_from` and
+  `planned_to` are 00:00:00 and 23:59:59 local of the newest out-for-delivery
+  row's date (that status means "on the vehicle today"; the page gives no
+  time). Never for `in_transit`, which can span days, and `None` once
+  delivered. Same narrow pattern as ha-ceska-posta. `delivered_at` likewise
+  comes from the delivered row's date, never from the top table row.
+- **Fields that are `None`:** `receiver`, `weight`, `dimensions` on purpose;
+  `pickup_point` until a pickup-point parcel has been seen (it is in
+  `PENDING_CAPABILITIES`). `CAPABILITIES` is `delivery_window`, `url` and
+  `history`.
 - **No outgoing parcels.** Colis Privé has no consumer sending surface, so
   there is no direction split; this is a decision, not a gap.
 - **Pickup-point sensors** (`en_route_to_pickup_point`, `awaiting_pickup`)

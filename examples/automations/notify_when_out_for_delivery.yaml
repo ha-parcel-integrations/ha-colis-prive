@@ -1,9 +1,8 @@
 # Notify exactly once per parcel when Colis Privé says it's on the
 # delivery vehicle today. Filters on the normalised
 # ParcelStatus.OUT_FOR_DELIVERY value so this is independent of the raw
-# Colis Privé status strings. Colis Privé gives no delivery window, so
-# the message just says "today"; the window branch is kept so the same
-# automation works for carriers that do fill ``planned_from``/``planned_to``.
+# Colis Privé status strings. Colis Privé gives no time of day, so the
+# message just says "today".
 
 alias: "Colis Privé: parcel out for delivery"
 description: Notify when a Colis Privé parcel goes out for delivery today.
@@ -21,12 +20,7 @@ actions:
     data:
       title: "Parcel out for delivery today"
       message: >-
-        {{ trigger.event.data.sender or trigger.event.data.barcode }} – expected
-        {% if trigger.event.data.planned_from and trigger.event.data.planned_to %}
-        between {{ as_timestamp(trigger.event.data.planned_from) | timestamp_custom('%H:%M') }}
-        and {{ as_timestamp(trigger.event.data.planned_to) | timestamp_custom('%H:%M') }}
-        {% else %}
-        today
-        {% endif %}
+        {{ trigger.event.data.sender or trigger.event.data.barcode }} is being
+        delivered today.
       data:
         clickAction: "{{ trigger.event.data.url }}"

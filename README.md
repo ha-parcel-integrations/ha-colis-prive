@@ -7,9 +7,6 @@
 
 > 💬 Questions or feedback? Join the discussion on the [Home Assistant community](https://community.home-assistant.io/t/packages-postnl-dhl-nl-dpd-and-gls-parcel-integration/112433/).
 
-> [!WARNING]
-> **Pre-release.** Only a parcel delivered to the letterbox has been seen so far. Delivery in person or to a neighbour, pickup points, failed deliveries and returns have not, so such a parcel keeps showing its last recognised status until its message is mapped. If you see an "Unrecognised Colis Privé status" warning in your log, please [report it](https://github.com/ha-parcel-integrations/ha-colis-prive/issues/new?template=unrecognised_status.yml).
-
 A custom Home Assistant integration that tracks your [Colis Privé](https://www.colisprive.com/) parcels (France, Belgium and Luxembourg; often the last-mile courier for webshop orders). No account is needed: you enter the tracking code, and the postal code of the delivery address is set once per hub, just like on the Colis Privé tracking page.
 
 Part of the [ha-parcel-integrations](https://ha-parcel-integrations.github.io/) family: it publishes the same canonical parcel format, statuses and events as the other carrier integrations, so it plugs straight into the [Parcel Aggregator](https://github.com/ha-parcel-integrations/ha-parcel-aggregator) and cross-carrier automations.
@@ -40,7 +37,7 @@ Part of the [ha-parcel-integrations](https://ha-parcel-integrations.github.io/) 
 - One hub per delivery postal code; set up as many as you need, across France, Belgium and Luxembourg
 - Per-parcel sensor with the canonical status (`registered` / `in_transit` / `out_for_delivery` / …), the carrier's own status text in your Home Assistant language (French, Dutch or English) and a tracking deep-link
 - Summary sensors: incoming parcels, recently delivered parcels
-- Colis Privé publishes no delivery window, so the next-delivery sensor and the **Deliveries** calendar stay empty
+- The expected delivery day once a parcel is out for delivery (Colis Privé gives no time of day), shown by the next-delivery sensor and a read-only **Deliveries** calendar
 - `colis_prive.track_parcel` / `colis_prive.untrack_parcel` services, so a dashboard button can add a parcel
 - Events + device triggers for no-code automations (parcel registered, status changed, delivered, delivery time changed)
 - Opt-in per-parcel status history
@@ -106,7 +103,7 @@ what your tracked parcels are actually doing:
 - A small, fixed per-hub offset is added on top, so not every Colis Privé
   hub out there polls at exactly the same second.
 
-Colis Privé gives no delivery window, so a parcel that is out for delivery is always polled on the hot schedule until it leaves that status.
+Colis Privé gives no time of day, so the delivery window of a parcel that is out for delivery is the whole day, and it is polled on the hot schedule until it leaves that status.
 
 ## Removal
 
@@ -118,7 +115,7 @@ Standard HA removal applies: **Settings → Devices & Services → Colis Privé 
 |---|---|
 | `sensor.colis_prive_<postal code>_incoming_parcels` | Number of active tracked parcels, full list under the `parcels` attribute |
 | `sensor.colis_prive_<postal code>_parcel_<code>` | One per tracked parcel; state is the canonical status, attributes carry the full normalised parcel |
-| `sensor.colis_prive_<postal code>_next_delivery` | Stays empty: Colis Privé publishes no delivery window |
+| `sensor.colis_prive_<postal code>_next_delivery` | The earliest expected delivery day among parcels out for delivery (Colis Privé gives no time of day) |
 | `sensor.colis_prive_<postal code>_delivered_parcels` | Recently delivered parcels (see the retention option) |
 | `sensor.colis_prive_<postal code>_last_successful_update` | Diagnostic: when Colis Privé was last polled successfully |
 
@@ -149,7 +146,7 @@ The integration fires these on the event bus (also available as device triggers 
 | `colis_prive_parcel_registered` | A new parcel appears in the active list |
 | `colis_prive_parcel_status_changed` | A parcel's canonical status changes (`old_status` / `new_status` in the payload), except the final hop to delivered |
 | `colis_prive_parcel_delivered` | A parcel is delivered |
-| `colis_prive_parcel_delivery_time_changed` | Never fires: Colis Privé publishes no delivery window |
+| `colis_prive_parcel_delivery_time_changed` | The expected delivery day changes |
 
 Every payload is the full normalised parcel plus the hub's `device_id`. Events are suppressed on the first refresh after start-up.
 

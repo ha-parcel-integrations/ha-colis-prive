@@ -233,6 +233,20 @@ def row_timestamp(date: str, country: str) -> str | None:
         return None
 
 
+def _stage_day(rows: list, lang: str, country: str, status: ParcelStatus) -> datetime | None:
+    """Local midnight of the newest row that maps to ``status``.
+
+    Picked by date, not table position: same-day rows are not kept in order.
+    """
+    days: list[datetime] = []
+    for row in rows:
+        if not isinstance(row, dict) or _match(row.get("text"), lang) is not status:
+            continue
+        if stamp := row_timestamp(row.get("date", ""), country):
+            days.append(datetime.fromisoformat(stamp))
+    return max(days, default=None)
+
+
 def build_history(
     rows: list | None,
     lang: str,
@@ -308,8 +322,18 @@ def normalize_parcel(
     )
     delivered = status is ParcelStatus.DELIVERED
     delivered_at = None
-    if delivered and rows and isinstance(rows[0], dict):
-        delivered_at = row_timestamp(rows[0].get("date", ""), country)
+    if delivered and (day := _stage_day(rows, lang, country, ParcelStatus.DELIVERED)):
+        delivered_at = day.isoformat()
+
+    # OUT_FOR_DELIVERY means "on a delivery vehicle today", so that row's date
+    # is the delivery day. The page never gives a time, so the window spans the
+    # whole day; in_transit is deliberately excluded, it can span several days.
+    planned_from = planned_to = None
+    if status is ParcelStatus.OUT_FOR_DELIVERY and (
+        day := _stage_day(rows, lang, country, ParcelStatus.OUT_FOR_DELIVERY)
+    ):
+        planned_from = day.isoformat()
+        planned_to = day.replace(hour=23, minute=59, second=59).isoformat()
 
     return {
         "carrier": "Colis Privé",
@@ -320,8 +344,8 @@ def normalize_parcel(
         "raw_status": status_text,
         "delivered": delivered,
         "delivered_at": delivered_at,
-        "planned_from": None,
-        "planned_to": None,
+        "planned_from": planned_from,
+        "planned_to": planned_to,
         "pickup": status is ParcelStatus.AT_PICKUP_POINT,
         "pickup_point": None,
         "url": tracking_url(tracking_code, postal_code, lang),

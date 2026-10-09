@@ -357,9 +357,41 @@ def test_normalize_active_parcel():
 
 def test_fields_the_page_does_not_carry_are_none():
     parcel = _normalize(active_sample())
-    for key in ("receiver", "planned_from", "planned_to", "pickup_point", "weight", "dimensions"):
+    for key in ("receiver", "pickup_point", "weight", "dimensions"):
         assert parcel[key] is None
     assert parcel["pickup"] is False
+
+
+def test_out_for_delivery_spans_its_own_day_in_the_hub_timezone():
+    parcel = normalize_parcel(active_sample(), country="BE")
+    assert parcel["status"] == ParcelStatus.OUT_FOR_DELIVERY
+    assert parcel["planned_from"] == "2026-03-04T00:00:00+01:00"
+    assert parcel["planned_to"] == "2026-03-04T23:59:59+01:00"
+
+
+def test_out_for_delivery_window_uses_the_newest_attempt():
+    sample = active_sample()
+    sample["history"] = [
+        {"date": "06/03/2026", "text": SENTENCES["en"]["out_for_delivery"]},
+        *sample["history"],
+    ]
+    parcel = normalize_parcel(sample, country="FR")
+    assert parcel["planned_from"] == "2026-03-06T00:00:00+01:00"
+
+
+@pytest.mark.parametrize("sample", [in_transit_sample, delivered_sample])
+def test_only_out_for_delivery_gets_a_window(sample):
+    parcel = normalize_parcel(sample(), country="BE")
+    assert parcel["planned_from"] is None
+    assert parcel["planned_to"] is None
+
+
+def test_delivered_at_comes_from_the_delivered_row_not_the_top_row():
+    sample = delivered_sample()
+    delivered_row, *rest = sample["history"]
+    sample["history"] = [rest[0], delivered_row, *rest[1:]]
+    parcel = normalize_parcel(sample, country="BE")
+    assert parcel["delivered_at"] == "2026-03-05T00:00:00+01:00"
 
 
 def test_history_is_opt_in():

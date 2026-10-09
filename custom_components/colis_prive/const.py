@@ -36,9 +36,10 @@ KNOWN_CAPABILITIES = frozenset(
 )
 
 # Every value not listed here comes back as a literal ``None`` from
-# normalize_parcel(). The page carries no ETA, weight or dimensions; the docs
-# site's comparison table is generated from this constant.
-CAPABILITIES = frozenset({"url", "history"})
+# normalize_parcel(). The page carries no weight or dimensions; the delivery
+# window is the out-for-delivery day. The docs site's comparison table is
+# generated from this constant.
+CAPABILITIES = frozenset({"delivery_window", "url", "history"})
 
 # Fields whose support is not confirmed yet — typically a carrier built without
 # a real parcel to check against. Leave this empty once the open questions are

@@ -28,4 +28,6 @@ The coordinator fires these on the HA event bus:
 | `colis_prive_parcel_status_changed` | A parcel's canonical status changes | Same, plus `old_status` / `new_status` |
 | `colis_prive_parcel_delivered` | A parcel reaches the delivered status | Same, plus `old_status` / `new_status` (fires *instead of* `status_changed` on that final hop) |
 
-Colis Privé publishes no expected delivery time, so `colis_prive_parcel_delivery_time_changed` never fires. Events are suppressed on the first refresh after start-up.
+| `colis_prive_parcel_delivery_time_changed` | A parcel's expected delivery day changes | Same, plus `old_planned_from` / `new_planned_from` / `old_planned_to` / `new_planned_to` |
+
+Colis Privé gives no time of day: the expected delivery window is the whole day a parcel goes out for delivery, and only exists while it is out for delivery. Events are suppressed on the first refresh after start-up.
