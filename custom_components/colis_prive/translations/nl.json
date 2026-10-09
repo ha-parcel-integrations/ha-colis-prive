@@ -1,0 +1,182 @@
+{
+  "title": "Colis Privé",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Colis Privé instellen",
+        "description": "Colis Privé-tracking heeft geen account nodig. Kies het land en de postcode waar de pakketten worden bezorgd; pakketten voeg je daarna toe via de integratie-opties of de service `colis_prive.track_parcel`. Je kunt meerdere postcodes instellen.",
+        "data": {
+          "country": "Land",
+          "postal_code": "Postcode"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Dit land en deze postcode zijn al ingesteld."
+    },
+    "error": {
+      "invalid_postcode": "Dit is geen geldige postcode voor het gekozen land."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Colis Privé-opties",
+        "menu_options": {
+          "parcels": "Pakketten",
+          "settings": "Instellingen"
+        },
+        "sections": {
+          "parcels": {
+            "name": "Pakketten",
+            "data": {
+              "add": "Pakket toevoegen",
+              "remove": "Pakketten verwijderen"
+            },
+            "data_description": {
+              "add": "Voer een Colis Privé-trackingcode in om het pakket te volgen. Je vindt de code op de verzendbevestiging of het niet-thuiskaartje."
+            }
+          },
+          "delivered": {
+            "name": "Bezorgde pakketten",
+            "data": {
+              "delivered_filter_type": "Filteren op",
+              "delivered_filter_amount": "Aantal"
+            },
+            "data_description": {
+              "delivered_filter_type": "Toon bezorgde pakketten van de laatste X dagen, of beperk tot de X meest recente.",
+              "delivered_filter_amount": "Aantal dagen of pakketten om te tonen."
+            }
+          },
+          "history": {
+            "name": "Pakketgeschiedenis",
+            "data": {
+              "include_history": "Statusgeschiedenis toevoegen"
+            },
+            "data_description": {
+              "include_history": "Voegt per pakket een geschiedenisattribuut toe met elke statusupdate (tijdstip, status, oorspronkelijke tekst). Standaard uit."
+            }
+          }
+        }
+      },
+      "parcels": {
+        "title": "Pakketten beheren",
+        "data": {
+          "tracking_codes": "Trackingcodes"
+        }
+      },
+      "settings": {
+        "title": "Instellingen",
+        "data": {
+          "delivered_filter_type": "Bezorgde pakketten: filteren op",
+          "delivered_filter_amount": "Bezorgde pakketten: aantal",
+          "include_history": "Statusgeschiedenis toevoegen"
+        }
+      }
+    },
+    "error": {
+      "invalid_tracking_code": "Dat lijkt geen Colis Privé-trackingcode te zijn.",
+      "already_tracked": "Dit pakket wordt al gevolgd."
+    }
+  },
+  "selector": {
+    "delivered_filter_type": {
+      "options": {
+        "days": "Dagen",
+        "parcels": "Aantal pakketten"
+      }
+    },
+    "country": {
+      "options": {
+        "fr": "Frankrijk",
+        "be": "België",
+        "lu": "Luxemburg"
+      }
+    }
+  },
+  "services": {
+    "track_parcel": {
+      "name": "Pakket volgen",
+      "description": "Begin met het volgen van een Colis Privé-pakket via de trackingcode.",
+      "fields": {
+        "tracking_code": {
+          "name": "Trackingcode",
+          "description": "De Colis Privé-trackingcode."
+        },
+        "country": {
+          "name": "Land",
+          "description": "Land van de hub. Verplicht als er meerdere hubs zijn ingesteld."
+        },
+        "postal_code": {
+          "name": "Postcode",
+          "description": "Postcode van de hub. Verplicht als er meerdere hubs zijn ingesteld, omdat België en Luxemburg dezelfde viercijferige codes gebruiken."
+        }
+      }
+    },
+    "untrack_parcel": {
+      "name": "Pakket niet meer volgen",
+      "description": "Stop met het volgen van een Colis Privé-pakket via de trackingcode.",
+      "fields": {
+        "tracking_code": {
+          "name": "Trackingcode",
+          "description": "De Colis Privé-trackingcode om niet meer te volgen."
+        },
+        "country": {
+          "name": "Land",
+          "description": "Land van de hub. Verplicht als de code in meerdere hubs wordt gevolgd."
+        },
+        "postal_code": {
+          "name": "Postcode",
+          "description": "Postcode van de hub."
+        }
+      }
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "parcel_registered": "Een pakket is geregistreerd",
+      "parcel_status_changed": "De status van een pakket is gewijzigd",
+      "parcel_delivered": "Een pakket is bezorgd",
+      "parcel_delivery_time_changed": "De verwachte bezorgtijd van een pakket is gewijzigd"
+    }
+  },
+  "entity": {
+    "button": {
+      "refresh": {
+        "name": "Verversen"
+      }
+    },
+    "calendar": {
+      "deliveries": {
+        "name": "Bezorgingen"
+      }
+    },
+    "sensor": {
+      "incoming_parcels": {
+        "name": "Inkomende pakketten",
+        "unit_of_measurement": "pakketten"
+      },
+      "next_delivery": {
+        "name": "Volgende bezorging"
+      },
+      "en_route_to_pickup_point": {
+        "name": "Onderweg naar afhaalpunt",
+        "unit_of_measurement": "pakketten"
+      },
+      "awaiting_pickup": {
+        "name": "Klaar voor afhalen",
+        "unit_of_measurement": "pakketten"
+      },
+      "delivered_parcels": {
+        "name": "Bezorgde pakketten",
+        "unit_of_measurement": "pakketten"
+      },
+      "last_update": {
+        "name": "Laatste succesvolle update"
+      },
+      "parcel": {
+        "name": "Pakket {barcode}"
+      }
+    }
+  }
+}

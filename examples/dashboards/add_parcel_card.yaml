@@ -1,0 +1,54 @@
+# Add a Colis Privé parcel straight from a dashboard — no diving into the options.
+#
+# The integration exposes two services:
+#   - colis_prive.track_parcel   (tracking_code, country, postal_code)
+#   - colis_prive.untrack_parcel (tracking_code, country, postal_code)
+#
+# country and postal_code may be left out while a single hub is set up; with
+# several hubs add them to the data below (both are then required).
+#
+# This example wires a text field + a button on a Lovelace card to
+# colis_prive.track_parcel. It needs one helper and one script (below), then the card.
+
+# ---------------------------------------------------------------------------
+# 1) Helper — Settings → Devices & Services → Helpers → Create → Text,
+#    or in configuration.yaml:
+# ---------------------------------------------------------------------------
+input_text:
+  colis_prive_new_parcel:
+    name: New Colis Privé tracking code
+    max: 12
+
+# ---------------------------------------------------------------------------
+# 2) Script — reads the text field, tracks the parcel, then clears the field.
+#    Add to scripts.yaml (or Settings → Automations & Scenes → Scripts).
+# ---------------------------------------------------------------------------
+colis_prive_track_new_parcel:
+  alias: "Colis Privé: track the parcel in the input box"
+  sequence:
+    - condition: template
+      value_template: "{{ states('input_text.colis_prive_new_parcel') | trim != '' }}"
+    - action: colis_prive.track_parcel
+      data:
+        tracking_code: "{{ states('input_text.colis_prive_new_parcel') | trim }}"
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.colis_prive_new_parcel
+      data:
+        value: ""
+
+# ---------------------------------------------------------------------------
+# 3) Lovelace card — paste into a dashboard (Edit → raw config, or add a
+#    manual card). Type the number, press the button.
+# ---------------------------------------------------------------------------
+# type: entities
+# title: Track a Colis Privé parcel
+# entities:
+#   - entity: input_text.colis_prive_new_parcel
+#   - type: button
+#     name: Track
+#     icon: mdi:package-variant-plus
+#     action_name: Add
+#     tap_action:
+#       action: perform-action
+#       perform_action: script.colis_prive_track_new_parcel
