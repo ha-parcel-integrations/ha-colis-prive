@@ -77,12 +77,16 @@ carrier; it validates the postcode length and picks the timezone.
   the right table after a language change. Events key on the canonical
   status, so a language change fires nothing.
 - **Dates only.** History carries `DD/MM/YYYY` with no time: timestamps are
-  local midnight in the hub country's timezone. The table is reversed, never
-  sorted, or the order within a day is lost.
-- **Unobserved sentences.** Delivered, pickup-point, failed-attempt and return
-  sentences have not been seen, so nothing maps to `delivered` yet and
-  `delivered_at`/`delivered` stay `False`/`None`. An unmapped sentence falls
-  back to the newest mappable history row and logs a one-shot WARNING naming
+  local midnight in the hub country's timezone. The page does not keep
+  same-day rows in event order, so history is ordered by date and then by
+  the matched keyword's lifecycle rank (each table is ordered last stage
+  first). An unmapped row inherits the rank of the row before it. The history
+  fallback likewise takes the furthest stage, not the top row.
+- **Unobserved sentences.** Only letterbox delivery maps to `delivered`.
+  In-person and neighbour delivery, pickup-point, failed-attempt and return
+  sentences have not been seen. `delivered_at` is the delivered row's date at
+  local midnight. An unmapped sentence falls back to the furthest mappable
+  history stage and logs a one-shot WARNING naming
   the language, even when the fallback succeeds, so the missing sentence
   surfaces. A new sentence goes into all three tables together, from a real
   capture.

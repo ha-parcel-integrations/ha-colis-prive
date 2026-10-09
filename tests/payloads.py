@@ -17,6 +17,7 @@ FAKE_NAME_FRAGMENT = "Fiktiva"
 # stage -> sentence, per page language.
 SENTENCES = {
     "fr": {
+        "delivered": "Votre colis a été livré en boîte aux lettres",
         "out_for_delivery": "Votre colis est en cours de distribution par le livreur",
         "arrived": "Votre colis est arrivé sur notre agence régionale de distribution.",
         "taken_over": (
@@ -29,6 +30,7 @@ SENTENCES = {
         ),
     },
     "nl": {
+        "delivered": "Jouw pakket werd in de brievenbus bezorgd.",
         "out_for_delivery": "Jouw pakket is onderweg naar jou.",
         "arrived": "Jouw pakket is toegekomen bij onze regionale bezorgpartner.",
         "taken_over": (
@@ -41,6 +43,7 @@ SENTENCES = {
         ),
     },
     "en": {
+        "delivered": "Your parcel is delivered in letterbox.",
         "out_for_delivery": "Your parcel is being delivered by the driver.",
         "arrived": "Your parcel has arrived at our regional distribution office.",
         "taken_over": (
@@ -59,12 +62,9 @@ EXPECTED = {
     "taken_over": "in_transit",
     "arrived": "in_transit",
     "out_for_delivery": "out_for_delivery",
+    "delivered": "delivered",
 }
-
-# Not a real carrier sentence: tests add a keyword for it to exercise the
-# delivered branch, which the real tables cannot reach yet.
-DELIVERED_TEXT = "Test sentence: parcel handed over to recipient"
-DELIVERED_KEYWORD = "handed over to recipient"
+DELIVERED_TEXT = SENTENCES["en"]["delivered"]
 
 DATES = ["02/03/2026", "03/03/2026", "03/03/2026", "04/03/2026"]
 
@@ -155,7 +155,7 @@ def in_transit_sample(code: str = ACTIVE_CODE, lang: str = "en") -> dict:
 
 
 def delivered_sample(code: str = DELIVERED_CODE) -> dict:
-    """A delivered parcel; needs the ``delivered_keyword`` fixture to map."""
+    """A parcel delivered to the letterbox."""
     sample = parsed(code, lang="en")
     sample["history"] = [{"date": "05/03/2026", "text": DELIVERED_TEXT}, *sample["history"]]
     sample["statusText"] = DELIVERED_TEXT

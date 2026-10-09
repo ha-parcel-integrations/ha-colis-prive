@@ -89,18 +89,21 @@ def test_unknown_language_has_no_table():
 def test_keyword_tables_match_the_observed_keywords():
     assert {lang: [k for k, _ in table] for lang, table in _KEYWORDS.items()} == {
         "fr": [
+            "livré en boîte aux lettres",
             "en cours de distribution",
             "arrivé sur notre agence régionale",
             "pris en charge par Colis Privé",
             "préparation par l'expéditeur",
         ],
         "nl": [
+            "in de brievenbus bezorgd",
             "onderweg naar jou",
             "toegekomen bij onze regionale bezorgpartner",
             "nationaal platform",
             "klaargemaakt door de webshop",
         ],
         "en": [
+            "delivered in letterbox",
             "being delivered by the driver",
             "arrived at our regional distribution office",
             "well received by a Colis Privé branch",
@@ -206,6 +209,38 @@ def test_row_timestamp_is_local_midnight_per_country():
 @pytest.mark.parametrize("bad", ["", "31/02/2026", "x/y/z", "04-03-2026", None])
 def test_row_timestamp_rejects_garbage(bad):
     assert row_timestamp(bad, "FR") is None
+
+
+def test_build_history_orders_same_day_rows_by_lifecycle_not_page_order():
+    # As seen on a real parcel: after delivery the page listed "taken over"
+    # above "arrived" although it happened first, all on the same date.
+    texts = SENTENCES["fr"]
+    rows = [
+        {"date": "03/03/2026", "text": texts[stage]}
+        for stage in ("delivered", "out_for_delivery", "taken_over", "arrived", "registered")
+    ]
+    events = build_history(rows, "fr", "BE")
+    assert [e["raw_status"] for e in events] == [
+        texts[stage]
+        for stage in ("registered", "taken_over", "arrived", "out_for_delivery", "delivered")
+    ]
+
+
+def test_build_history_keeps_an_unmapped_row_next_to_its_neighbour():
+    texts = SENTENCES["en"]
+    rows = [
+        {"date": "03/03/2026", "text": texts["out_for_delivery"]},
+        {"date": "03/03/2026", "text": "A sentence nobody has seen"},
+        {"date": "03/03/2026", "text": texts["taken_over"]},
+        {"date": "02/03/2026", "text": texts["registered"]},
+    ]
+    events = build_history(rows, "en", "BE")
+    assert [e["raw_status"] for e in events] == [
+        texts["registered"],
+        texts["taken_over"],
+        "A sentence nobody has seen",
+        texts["out_for_delivery"],
+    ]
 
 
 def test_build_history_reverses_to_oldest_first_and_keeps_same_day_order():
@@ -365,13 +400,15 @@ def test_normalize_without_postcode_has_no_url():
 
 
 def test_delivered_comes_only_from_a_mapped_delivered_sentence():
-    """The real delivered sentence is unobserved, so nothing maps to it yet."""
-    parcel = _normalize(delivered_sample())
+    """An unrecognised final sentence never marks a parcel delivered."""
+    sample = delivered_sample()
+    sample["statusText"] = "A final sentence nobody has seen"
+    sample["history"][0]["text"] = sample["statusText"]
+    parcel = _normalize(sample)
     assert parcel["delivered"] is False
     assert parcel["delivered_at"] is None
 
 
-@pytest.mark.usefixtures("delivered_keyword")
 def test_normalize_delivered_parcel_stamps_delivered_at_from_newest_row():
     parcel = _normalize(delivered_sample())
     assert parcel["status"] == ParcelStatus.DELIVERED
@@ -487,3 +524,16 @@ def test_format_dimensions_needs_all_three_axes():
 def test_blank_history_sentences_are_skipped_in_the_fallback():
     status = map_parcel_status("Mystery", "en", ["", None, SENTENCES["en"]["registered"]])
     assert status == ParcelStatus.REGISTERED
+
+
+@pytest.mark.parametrize("lang", ["fr", "nl", "en"])
+def test_letterbox_delivery_maps_to_delivered_in_every_language(lang):
+    assert map_parcel_status(SENTENCES[lang]["delivered"], lang) == ParcelStatus.DELIVERED
+
+
+def test_history_fallback_takes_the_furthest_stage_not_the_top_row():
+    texts = SENTENCES["fr"]
+    status = map_parcel_status(
+        "Une phrase inconnue", "fr", [texts["taken_over"], texts["out_for_delivery"]]
+    )
+    assert status == ParcelStatus.OUT_FOR_DELIVERY

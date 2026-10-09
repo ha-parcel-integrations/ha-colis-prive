@@ -25,21 +25,6 @@ def reset_one_shot_warnings():
     yield
 
 
-@pytest.fixture
-def delivered_keyword(monkeypatch):
-    """Teach the English table a delivered sentence (the real one is unobserved)."""
-    from custom_components.colis_prive import parcels
-    from custom_components.colis_prive.const import ParcelStatus
-
-    from .payloads import DELIVERED_KEYWORD
-
-    monkeypatch.setitem(
-        parcels._TABLES,
-        "en",
-        parcels._TABLES["en"] + ((DELIVERED_KEYWORD, ParcelStatus.DELIVERED),),
-    )
-
-
 if sys.platform == "win32":
     # pytest-homeassistant-custom-component blocks socket *creation*
     # (``disable_socket(allow_unix_socket=True)``) in its per-test setup hook.

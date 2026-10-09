@@ -51,20 +51,27 @@ def _fold(text: str) -> str:
 # sentence also mentions "agence régionale de distribution" and the NL
 # "nationaal platform" sentence also mentions "regionale bezorgpartner", so
 # the shorter fragments would match two stages.
+#
+# Each table is ordered from the last lifecycle stage to the first. The page
+# does not keep same-day rows in event order, so that position is what orders
+# events within one date.
 _KEYWORDS: dict[str, tuple[tuple[str, ParcelStatus], ...]] = {
     "fr": (
+        ("livré en boîte aux lettres", ParcelStatus.DELIVERED),
         ("en cours de distribution", ParcelStatus.OUT_FOR_DELIVERY),
         ("arrivé sur notre agence régionale", ParcelStatus.IN_TRANSIT),
         ("pris en charge par Colis Privé", ParcelStatus.IN_TRANSIT),
         ("préparation par l'expéditeur", ParcelStatus.REGISTERED),
     ),
     "nl": (
+        ("in de brievenbus bezorgd", ParcelStatus.DELIVERED),
         ("onderweg naar jou", ParcelStatus.OUT_FOR_DELIVERY),
         ("toegekomen bij onze regionale bezorgpartner", ParcelStatus.IN_TRANSIT),
         ("nationaal platform", ParcelStatus.IN_TRANSIT),
         ("klaargemaakt door de webshop", ParcelStatus.REGISTERED),
     ),
     "en": (
+        ("delivered in letterbox", ParcelStatus.DELIVERED),
         ("being delivered by the driver", ParcelStatus.OUT_FOR_DELIVERY),
         ("arrived at our regional distribution office", ParcelStatus.IN_TRANSIT),
         ("well received by a Colis Privé branch", ParcelStatus.IN_TRANSIT),
@@ -103,15 +110,22 @@ def _warn_unmapped_status(text: str, lang: str, outcome: str) -> None:
     )
 
 
-def _match(text: str | None, lang: str) -> ParcelStatus | None:
-    """Return the status for ``text`` from the ``lang`` table, if any."""
+def _match_ranked(text: str | None, lang: str) -> tuple[ParcelStatus, int] | None:
+    """Return the status for ``text`` and its lifecycle rank (higher is later)."""
     if not text:
         return None
     folded = _fold(text)
-    for keyword, status in _TABLES.get(lang, ()):
+    table = _TABLES.get(lang, ())
+    for index, (keyword, status) in enumerate(table):
         if keyword in folded:
-            return status
+            return status, len(table) - index
     return None
+
+
+def _match(text: str | None, lang: str) -> ParcelStatus | None:
+    """Return the status for ``text`` from the ``lang`` table, if any."""
+    hit = _match_ranked(text, lang)
+    return hit[0] if hit else None
 
 
 def map_parcel_status(
@@ -119,8 +133,9 @@ def map_parcel_status(
 ) -> ParcelStatus:
     """Map the current status sentence to a canonical :class:`ParcelStatus`.
 
-    An unmapped sentence falls back to the newest history sentence that maps
-    (``history_texts`` is newest first), then to ``unknown``. Either way the
+    An unmapped sentence falls back to the furthest lifecycle stage among the
+    history sentences that map (page order is not reliable within a day), then
+    to ``unknown``. Either way the
     unrecognised sentence is logged once so the table can grow. ``None`` (a
     not-yet-scanned parcel) reports ``unknown`` silently.
     """
@@ -129,11 +144,11 @@ def map_parcel_status(
     mapped = _match(text, lang)
     if mapped is not None:
         return mapped
-    for earlier in history_texts or []:
-        mapped = _match(earlier, lang)
-        if mapped is not None:
-            _warn_unmapped_status(text, lang, f"reported as '{mapped.value}'")
-            return mapped
+    hits = [hit for earlier in history_texts or [] if (hit := _match_ranked(earlier, lang))]
+    if hits:
+        mapped = max(hits, key=lambda hit: hit[1])[0]
+        _warn_unmapped_status(text, lang, f"reported as '{mapped.value}'")
+        return mapped
     _warn_unmapped_status(text, lang, "reported as 'unknown'")
     return ParcelStatus.UNKNOWN
 
@@ -227,24 +242,35 @@ def build_history(
 ) -> list[dict]:
     """Build the canonical ``history`` list from the table rows.
 
-    ``rows`` is newest first, as on the page. The whole list is reversed
-    instead of sorted: the dates carry no time, so a sort would lose the
-    order of events within one day. Capped to the most recent ``max_events``.
+    ``rows`` is newest first, as on the page. Dates carry no time and the page
+    does not keep same-day rows in event order, so events are ordered by date
+    and then by lifecycle stage. An unmapped sentence keeps the rank of the
+    row before it, so it stays next to its neighbour. Capped to the most
+    recent ``max_events``.
     """
-    events: list[dict] = []
+    ranked: list[tuple[str, int, dict]] = []
+    previous_rank = 0
     for row in reversed(rows or []):
         if not isinstance(row, dict):
             continue
         timestamp = row_timestamp(row.get("date", ""), country)
         if not timestamp:
             continue
-        events.append(
-            {
-                "timestamp": timestamp,
-                "status": map_event_status(row.get("text"), lang),
-                "raw_status": row.get("text"),
-            }
+        hit = _match_ranked(row.get("text"), lang)
+        previous_rank = hit[1] if hit else previous_rank
+        ranked.append(
+            (
+                timestamp,
+                previous_rank,
+                {
+                    "timestamp": timestamp,
+                    "status": map_event_status(row.get("text"), lang),
+                    "raw_status": row.get("text"),
+                },
+            )
         )
+    ranked.sort(key=lambda item: (item[0], item[1]))
+    events = [event for _, _, event in ranked]
     return events[-max_events:]
 
 

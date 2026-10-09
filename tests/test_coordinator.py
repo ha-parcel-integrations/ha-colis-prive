@@ -30,8 +30,6 @@ from .payloads import (
     in_transit_sample,
 )
 
-pytestmark = pytest.mark.usefixtures("delivered_keyword")
-
 
 def _entry_with(parcels: list[dict]) -> MockConfigEntry:
     return MockConfigEntry(
