@@ -1,0 +1,182 @@
+{
+  "title": "Colis Privé",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Colis Privé einrichten",
+        "description": "Die Colis Privé-Sendungsverfolgung braucht kein Konto. Wähle das Lieferland und die Postleitzahl, an die die Pakete geliefert werden; Pakete fügst du danach über die Integrationsoptionen oder den Dienst `colis_prive.track_parcel` hinzu. Du kannst mehrere Postleitzahlen einrichten.",
+        "data": {
+          "country": "Land",
+          "postal_code": "Postleitzahl"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Dieses Land und diese Postleitzahl sind bereits eingerichtet."
+    },
+    "error": {
+      "invalid_postcode": "Das ist keine gültige Postleitzahl für das gewählte Land."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Colis Privé-Optionen",
+        "menu_options": {
+          "parcels": "Pakete",
+          "settings": "Einstellungen"
+        },
+        "sections": {
+          "parcels": {
+            "name": "Pakete",
+            "data": {
+              "add": "Paket hinzufügen",
+              "remove": "Pakete entfernen"
+            },
+            "data_description": {
+              "add": "Gib einen Colis Privé-Sendungscode ein, um ihn zu verfolgen. Du findest ihn auf der Versandbestätigung oder der Benachrichtigungskarte bei einem Zustellversuch."
+            }
+          },
+          "delivered": {
+            "name": "Zugestellte Pakete",
+            "data": {
+              "delivered_filter_type": "Filtern nach",
+              "delivered_filter_amount": "Anzahl"
+            },
+            "data_description": {
+              "delivered_filter_type": "Zeige zugestellte Pakete der letzten X Tage oder beschränke die Anzeige auf die letzten X Pakete.",
+              "delivered_filter_amount": "Anzahl der anzuzeigenden Tage oder Pakete."
+            }
+          },
+          "history": {
+            "name": "Paketverlauf",
+            "data": {
+              "include_history": "Statusverlauf einbeziehen"
+            },
+            "data_description": {
+              "include_history": "Fügt jedem Paket ein Verlaufsattribut hinzu, das jede Statusaktualisierung auflistet (Zeitstempel, Status, Originaltext). Standardmäßig deaktiviert."
+            }
+          }
+        }
+      },
+      "parcels": {
+        "title": "Pakete verwalten",
+        "data": {
+          "tracking_codes": "Sendungsnummern"
+        }
+      },
+      "settings": {
+        "title": "Einstellungen",
+        "data": {
+          "delivered_filter_type": "Zugestellte Pakete: filtern nach",
+          "delivered_filter_amount": "Zugestellte Pakete: Anzahl",
+          "include_history": "Statusverlauf einbeziehen"
+        }
+      }
+    },
+    "error": {
+      "invalid_tracking_code": "Das sieht nicht wie ein Colis Privé-Sendungscode aus.",
+      "already_tracked": "Dieses Paket wird bereits verfolgt."
+    }
+  },
+  "selector": {
+    "delivered_filter_type": {
+      "options": {
+        "days": "Tage",
+        "parcels": "Anzahl Pakete"
+      }
+    },
+    "country": {
+      "options": {
+        "fr": "Frankreich",
+        "be": "Belgien",
+        "lu": "Luxemburg"
+      }
+    }
+  },
+  "services": {
+    "track_parcel": {
+      "name": "Sendung verfolgen",
+      "description": "Beginnt, ein Paket anhand seines Colis Privé-Sendungscodes zu verfolgen.",
+      "fields": {
+        "tracking_code": {
+          "name": "Sendungsnummer",
+          "description": "Der Colis Privé-Sendungscode."
+        },
+        "country": {
+          "name": "Land",
+          "description": "Land des Hubs. Erforderlich, wenn mehrere Hubs eingerichtet sind."
+        },
+        "postal_code": {
+          "name": "Postleitzahl",
+          "description": "Postleitzahl des Hubs. Erforderlich, wenn mehrere Hubs eingerichtet sind, da Belgien und Luxemburg dieselben vierstelligen Codes verwenden."
+        }
+      }
+    },
+    "untrack_parcel": {
+      "name": "Sendung nicht mehr verfolgen",
+      "description": "Beendet die Verfolgung eines Pakets anhand seines Colis Privé-Sendungscodes.",
+      "fields": {
+        "tracking_code": {
+          "name": "Sendungsnummer",
+          "description": "Der Colis Privé-Sendungscode, dessen Verfolgung beendet werden soll."
+        },
+        "country": {
+          "name": "Land",
+          "description": "Land des Hubs. Erforderlich, wenn der Code in mehr als einem Hub verfolgt wird."
+        },
+        "postal_code": {
+          "name": "Postleitzahl",
+          "description": "Postleitzahl des Hubs."
+        }
+      }
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "parcel_registered": "Ein Paket wurde registriert",
+      "parcel_status_changed": "Der Status eines Pakets hat sich geändert",
+      "parcel_delivered": "Ein Paket wurde zugestellt",
+      "parcel_delivery_time_changed": "Die voraussichtliche Zustellzeit eines Pakets hat sich geändert"
+    }
+  },
+  "entity": {
+    "button": {
+      "refresh": {
+        "name": "Aktualisieren"
+      }
+    },
+    "calendar": {
+      "deliveries": {
+        "name": "Zustellungen"
+      }
+    },
+    "sensor": {
+      "incoming_parcels": {
+        "name": "Eingehende Pakete",
+        "unit_of_measurement": "Pakete"
+      },
+      "next_delivery": {
+        "name": "Nächste Zustellung"
+      },
+      "en_route_to_pickup_point": {
+        "name": "Unterwegs zur Abholstelle",
+        "unit_of_measurement": "Pakete"
+      },
+      "awaiting_pickup": {
+        "name": "Abholbereit",
+        "unit_of_measurement": "Pakete"
+      },
+      "delivered_parcels": {
+        "name": "Zugestellte Pakete",
+        "unit_of_measurement": "Pakete"
+      },
+      "last_update": {
+        "name": "Letzte erfolgreiche Aktualisierung"
+      },
+      "parcel": {
+        "name": "Paket {barcode}"
+      }
+    }
+  }
+}
