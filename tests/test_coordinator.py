@@ -529,7 +529,7 @@ async def test_cached_payload_keeps_its_own_language_after_a_failure(hass):
     await coordinator._async_update_data()
 
     hass.config.language = "en"
-    client.async_get_parcel.side_effect = ColisPrivApiError("changed page layout")
+    client.async_get_parcel.side_effect = ColisPrivApiError("unrecognised reply")
     data = await coordinator._async_update_data()
 
     assert data[0]["status"] == ParcelStatus.OUT_FOR_DELIVERY
@@ -544,7 +544,7 @@ async def test_changed_layout_keeps_last_good_data(hass):
     coordinator = ColisPrivCoordinator(hass, client, entry)
     await coordinator._async_update_data()
 
-    client.async_get_parcel.side_effect = ColisPrivApiError("changed page layout")
+    client.async_get_parcel.side_effect = ColisPrivApiError("unrecognised reply")
     data = await coordinator._async_update_data()
 
     assert data[0]["status"] == ParcelStatus.OUT_FOR_DELIVERY

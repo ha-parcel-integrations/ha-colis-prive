@@ -72,10 +72,10 @@ PENDING_CAPABILITIES: frozenset[str] = frozenset({"pickup_point"})
 
 # Keyless, stateless tracking page: one GET per parcel, keyed on the
 # tracking number concatenated with the delivery postcode. Redirects are never
-# followed: a 302 to the search form is the only "not found" signal (unknown
-# number, wrong postcode and missing postcode are indistinguishable), while a
-# 200 without the result panel means the template changed. ``lang`` only
-# changes the status sentences, so each language has its own keyword table.
+# followed: the redirect is the only "not found" signal (unknown number, wrong
+# postcode and missing postcode are indistinguishable), while a reply we
+# cannot read means the carrier changed its shape. ``lang`` only changes the
+# status sentences, so each language has its own keyword table.
 TRACKING_API_URL = "https://colisprive.com/moncolis/pages/detailColis.aspx"
 TRACKING_URL = (
     "https://colisprive.com/moncolis/pages/detailColis.aspx"

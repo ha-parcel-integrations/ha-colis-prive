@@ -57,16 +57,17 @@ code and only needs both when the same code sits in several hubs. Services
 are removed only when the last hub unloads. The country is not sent to the
 carrier; it validates the postcode length and picks the timezone.
 
-- **Source is the public tracking page.** One `GET` per parcel, redirects off: a `302` to the
-  search form is not-found (unknown number, wrong postcode and missing
-  postcode are indistinguishable, so the usual pending placeholder applies),
-  a `200` without the result panel is a changed template and an update
-  failure, never not-found. `parser.py` fails closed and the coordinator
-  keeps the last good payload on any failure, with no retry burst.
-- **The recipient block is never read.** `parser.py` drops everything inside
-  `.divDesti` while parsing, so the address cannot reach `raw`, diagnostics,
-  logs or events. Tests assert a fake address in the fixtures appears
-  nowhere. Do not add a selector for that block, even for debugging.
+- **Source is the public tracking lookup.** One `GET` per parcel. A reply
+  that means "no such parcel" is not-found (unknown number, wrong postcode and
+  missing postcode are indistinguishable, so the usual pending placeholder
+  applies); a reply `parser.py` cannot read means the carrier changed its
+  shape and is an update failure, never not-found. `parser.py` fails closed
+  and the coordinator keeps the last good payload on any failure, with no
+  retry burst. The request mechanics are in the research notes.
+- **The recipient's details are never read.** `parser.py` drops the block
+  carrying them, so the address cannot reach `raw`, diagnostics, logs or
+  events. Tests assert a fake address in the fixtures appears nowhere. Do not
+  add a way to read that block, even for debugging.
 - **Language.** `hass.config.language` resolves to `fr`, `nl` or `en` on
   every refresh (`parcels.resolve_lang`). `raw_status` and history
   `raw_status` are the carrier's own sentence in that language, never
@@ -76,8 +77,8 @@ carrier; it validates the postcode length and picks the timezone.
   it was fetched in (`raw["lang"]`) so a cached payload is matched against
   the right table after a language change. Events key on the canonical
   status, so a language change fires nothing.
-- **Dates only.** History carries `DD/MM/YYYY` with no time: timestamps are
-  local midnight in the hub country's timezone. The page does not keep
+- **Dates only.** History carries a date with no time: timestamps are
+  local midnight in the hub country's timezone. The carrier does not keep
   same-day rows in event order, so history is ordered by date and then by
   the matched keyword's lifecycle rank (each table is ordered last stage
   first). An unmapped row inherits the rank of the row before it. The history
@@ -92,9 +93,8 @@ carrier; it validates the postcode length and picks the timezone.
   capture.
 - **Delivery window.** Only while `out_for_delivery`: `planned_from` and
   `planned_to` are 00:00:00 and 23:59:59 local of the newest out-for-delivery
-  row's date (that status means "on the vehicle today"; the page gives no
-  time). Never for `in_transit`, which can span days, and `None` once
-  delivered. Same narrow pattern as ha-ceska-posta. `delivered_at` likewise
+  row's date (that status means "on the vehicle today"; no time is given).
+  Never for `in_transit`, which can span days, and `None` once delivered. Same narrow pattern as ha-ceska-posta. `delivered_at` likewise
   comes from the delivered row's date, never from the top table row.
 - **Fields that are `None`:** `receiver`, `weight`, `dimensions` on purpose;
   `pickup_point` until a pickup-point parcel has been seen (it is in
@@ -106,7 +106,7 @@ carrier; it validates the postcode length and picks the timezone.
   are kept from the template and stay at zero until a pickup-point sentence is
   captured and mapped.
 - **Diagnostics** redact the code, postcode, request URL, every status and
-  history value, the sender and the `hfNPAI` flag.
+  history value, the sender and the undeliverable-address flag.
 
 ## Options and reloads
 
@@ -249,7 +249,7 @@ repo's own `CLAUDE.md` — not a generator flag.
 | File | Carrier-specific? |
 |---|---|
 | `api.py` (HTTP client, error types; `account/` and `tracking/` packages instead when a repo has two sources) | **yes** |
-| `parser.py` (strict result-panel reader, fail-closed) | **yes** |
+| `parser.py` (strict tracking-reply reader, fail-closed) | **yes** |
 | `const.py` (domain, URLs, `ParcelStatus`, option keys) | partly (URLs) |
 | `parcels.py` (status map, `normalize_parcel`, history, sort, filters — pure, no I/O) | partly (the status map, `normalize_parcel`) |
 | `coordinator.py` (fetch, cache, event firing) | mostly not |

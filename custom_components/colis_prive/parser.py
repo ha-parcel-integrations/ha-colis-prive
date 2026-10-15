@@ -1,10 +1,10 @@
-"""Strict parser for the Colis Privé result panel.
+"""Strict reader for Colis Privé's tracking reply.
 
-There is no structured alternative to the tracking page, so this parser fails
-closed: anything it cannot positively identify raises
-:class:`ColisPrivParseError` instead of yielding a partial parcel. The block
-holding the recipient's name and address is skipped while parsing, so that text
-never reaches a variable, a log line or the stored payload.
+The reply carries no structured alternative, so this module fails closed:
+anything it cannot positively identify raises :class:`ColisPrivParseError`
+instead of yielding a partial parcel. The part carrying the recipient's name
+and address is skipped as the reply is read, so that text never reaches a
+variable, a log line or the stored payload.
 """
 from __future__ import annotations
 

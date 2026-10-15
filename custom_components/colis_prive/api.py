@@ -51,10 +51,10 @@ class ColisPrivApiClient:
     async def async_get_parcel(
         self, tracking_code: str, postal_code: str, lang: str
     ) -> dict[str, Any] | None:
-        """Fetch and parse one parcel's result panel.
+        """Fetch and read one parcel's tracking reply.
 
-        Redirects stay off: followed, a miss lands on the search form with a
-        200, which would read as a changed template instead of not-found.
+        Redirects stay off: followed, a miss would read as a reply we cannot
+        parse instead of as not-found.
         """
         async with self._session.get(
             TRACKING_API_URL,
@@ -85,15 +85,15 @@ class ColisPrivApiClient:
         try:
             parsed = parse_result(html)
         except ColisPrivParseError as err:
-            # One-shot: with N parcels a changed layout would otherwise log N
-            # lines on every poll.
+            # One-shot: with N parcels an unreadable reply would otherwise
+            # log N lines on every poll.
             if not self._layout_warned:
                 self._layout_warned = True
                 _LOGGER.warning(
-                    "Colis Privé page layout not recognised (%s); keeping previous data",
+                    "Colis Privé reply not recognised (%s); keeping previous data",
                     err,
                 )
-            raise ColisPrivApiError(f"changed page layout ({err})") from err
+            raise ColisPrivApiError(f"unrecognised reply ({err})") from err
 
         parsed["trackingNumber"] = tracking_code
         parsed["lang"] = lang

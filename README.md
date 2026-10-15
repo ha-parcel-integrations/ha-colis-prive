@@ -7,7 +7,7 @@
 
 > 💬 Questions or feedback? Join the discussion on the [Home Assistant community](https://community.home-assistant.io/t/packages-postnl-dhl-nl-dpd-and-gls-parcel-integration/112433/).
 
-A custom Home Assistant integration that tracks your [Colis Privé](https://www.colisprive.com/) parcels (France, Belgium and Luxembourg; often the last-mile courier for webshop orders). No account is needed: you enter the tracking code, and the postal code of the delivery address is set once per hub, just like on the Colis Privé tracking page.
+A custom Home Assistant integration that tracks your [Colis Privé](https://www.colisprive.com/) parcels (France, Belgium and Luxembourg; often the last-mile courier for webshop orders). No account is needed: you enter the tracking code, and the postal code of the delivery address is set once per hub, just as Colis Privé's own tracking asks for it.
 
 Part of the [ha-parcel-integrations](https://ha-parcel-integrations.github.io/) family: it publishes the same canonical parcel format, statuses and events as the other carrier integrations, so it plugs straight into the [Parcel Aggregator](https://github.com/ha-parcel-integrations/ha-parcel-aggregator) and cross-carrier automations.
 
@@ -68,7 +68,7 @@ Add the integration via **Settings → Devices & Services → Add Integration �
 
 A hub is one country and postal code. Add another hub for each other postal code (a second address, a relative's home); the same country and postal code cannot be added twice. Colis Privé looks a parcel up by its number and the delivery postal code together, so a parcel only shows up in the hub whose postal code it was sent to.
 
-Then add parcels via the integration's **Configure** dialog, the [`colis_prive.track_parcel`](#services) service, or a [dashboard button](examples/dashboards/add_parcel_card.yaml). The tracking number is 12 letters or digits; enter it without the postal code. Spaces are ignored, so you can paste it as shown on the tracking page.
+Then add parcels via the integration's **Configure** dialog, the [`colis_prive.track_parcel`](#services) service, or a [dashboard button](examples/dashboards/add_parcel_card.yaml). The tracking number is 12 letters or digits; enter it without the postal code. Spaces are ignored, so you can paste it exactly as Colis Privé shows it.
 
 The status text follows your Home Assistant language: French, Dutch or English (any other language gets English). Changing the language changes `raw_status` on the next refresh and nothing else.
 
@@ -181,7 +181,7 @@ logger:
 - **A parcel shows `unknown`** — Colis Privé answers the same way for a number it has not received yet, a wrong number and a wrong postal code, so these cannot be told apart. A merchant often prints the label days before the first scan; the parcel picks up automatically once Colis Privé has it. Check that the hub's postal code is the delivery address's, and that the number was entered without the postal code attached.
 - **A parcel looks stuck** — only the letterbox delivery message is known so far; delivery in person or to a neighbour, pickup-point, failed-delivery and return messages have not been observed yet. An unrecognised message keeps the last recognised status and logs a warning.
 - **A status logs "Unrecognised Colis Privé status"** — please [open an issue](https://github.com/ha-parcel-integrations/ha-colis-prive/issues/new?template=unrecognised_status.yml) with the logged line (it names the language) so the mapping can be extended.
-- **Updates fail after working before** — if Colis Privé changes its tracking page, the integration stops updating and keeps the last data instead of guessing. Open an issue.
+- **Updates fail after working before** — if Colis Privé changes how its tracking answers, the integration stops updating and keeps the last data instead of guessing. Open an issue.
 
 ## Related integrations
 
@@ -199,9 +199,9 @@ This is an independent, community-built project. It is not affiliated with, endo
 
 All third-party trademarks, trade names, product names, logos, and other brand assets are the property of their respective owners. References to them are solely to identify the relevant carrier or service and do not imply affiliation, sponsorship, or endorsement. Nothing in this project grants or implies any licence or right to use third-party brand assets.
 
-This integration reads Colis Privé's public tracking page, which is not a documented interface. These may change or be withdrawn without notice and may be subject to Colis Privé's terms. Data is sent only to Colis Privé's own services or those of its group; this project operates no servers of its own. You are responsible for ensuring that your use complies with applicable law and those terms. Use is at your own risk; see the [licence](LICENSE) for warranty limitations.
+This integration reads Colis Privé's public tracking lookup, which is not a documented interface. These may change or be withdrawn without notice and may be subject to Colis Privé's terms. Data is sent only to Colis Privé's own services or those of its group; this project operates no servers of its own. You are responsible for ensuring that your use complies with applicable law and those terms. Use is at your own risk; see the [licence](LICENSE) for warranty limitations.
 
-The integration only reads the parcel status; it never reads or stores the recipient's name or address shown on that page.
+The integration only reads the parcel status; it never reads or stores the recipient's name or address that Colis Privé shows alongside it.
 
 ## Contributing
 

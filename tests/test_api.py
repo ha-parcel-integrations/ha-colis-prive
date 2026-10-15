@@ -56,19 +56,19 @@ async def test_other_redirect_is_an_error():
     assert err.value.status_code == 302
 
 
-async def test_200_without_the_panel_is_a_changed_template_not_not_found():
+async def test_an_unreadable_reply_is_a_failure_not_not_found():
     session = _session_returning(200, result_html(panel=False))
     with pytest.raises(ColisPrivApiError) as err:
         await ColisPrivApiClient(session).async_get_parcel(ACTIVE_CODE, POSTCODE, "en")
-    assert "layout" in err.value.detail
+    assert "unrecognised reply" in err.value.detail
 
 
-async def test_changed_layout_warns_only_once(caplog):
+async def test_an_unrecognised_reply_warns_only_once(caplog):
     client = ColisPrivApiClient(_session_returning(200, result_html(panel=False)))
     for _ in range(3):
         with pytest.raises(ColisPrivApiError):
             await client.async_get_parcel(ACTIVE_CODE, POSTCODE, "en")
-    assert caplog.text.count("page layout not recognised") == 1
+    assert caplog.text.count("reply not recognised") == 1
 
 
 @pytest.mark.parametrize("status", [500, 503, 404])
