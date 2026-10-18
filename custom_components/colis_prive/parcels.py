@@ -223,11 +223,17 @@ def format_dimensions(
     }
 
 
+# Built once at import: constructing a ZoneInfo reads the tz file from disk.
+_COUNTRY_ZONES = {
+    name: ZoneInfo(name) for name in {*COUNTRY_TIMEZONES.values(), "Europe/Paris"}
+}
+
+
 def row_timestamp(date: str, country: str) -> str | None:
     """Turn ``DD/MM/YYYY`` into local midnight in the hub country's timezone."""
     try:
         day, month, year = (int(part) for part in date.split("/"))
-        zone = ZoneInfo(COUNTRY_TIMEZONES.get(country, "Europe/Paris"))
+        zone = _COUNTRY_ZONES[COUNTRY_TIMEZONES.get(country, "Europe/Paris")]
         return datetime(year, month, day, tzinfo=zone).isoformat()
     except (ValueError, TypeError, AttributeError):
         return None
