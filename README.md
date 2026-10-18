@@ -45,7 +45,7 @@ Part of the [ha-parcel-integrations](https://ha-parcel-integrations.github.io/) 
 
 ## Requirements
 
-- Home Assistant 2024.12 or newer
+- Home Assistant 2025.12 or newer
 - A Colis Privé parcel, its tracking number (without the postal code) and the postal code
   of the delivery address (France 5 digits, Belgium or Luxembourg 4 digits) —
   no account needed
