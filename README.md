@@ -56,7 +56,11 @@ A custom Home Assistant integration that tracks your [Colis Privé](https://www.
 
 1. In HACS, choose the three-dot menu → **Custom repositories**.
 2. Add `https://github.com/ha-parcel-integrations/ha-colis-prive` as an **Integration**.
-3. Install **Colis Privé** and restart Home Assistant.
+3. Install **Colis Privé** and restart Home Assistant if HACS asks you to.
+
+Or click the button below to open it directly in HACS:
+
+[![Open your Home Assistant instance and open this repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=ha-parcel-integrations&repository=ha-colis-prive&category=integration)
 
 ### Manual
 
@@ -64,7 +68,9 @@ Copy `custom_components/colis_prive` into your `config/custom_components/` folde
 
 ## Configuration
 
-Add the integration via **Settings → Devices & Services → Add Integration → Colis Privé**, then choose the country and the postal code of the address the parcels are delivered to. Nothing is contacted during setup.
+[![Open your Home Assistant instance and start setting up this integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=colis_prive)
+
+Or set it up by hand: add the integration via **Settings → Devices & Services → Add Integration → Colis Privé**, then choose the country and the postal code of the address the parcels are delivered to. Nothing is contacted during setup.
 
 A hub is one country and postal code. Add another hub for each other postal code (a second address, a relative's home); the same country and postal code cannot be added twice. Colis Privé looks a parcel up by its number and the delivery postal code together, so a parcel only shows up in the hub whose postal code it was sent to.
 
