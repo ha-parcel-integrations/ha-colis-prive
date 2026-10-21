@@ -1,22 +1,18 @@
 """Tests for Colis Privé diagnostics."""
+
 from datetime import timedelta
 from unittest.mock import MagicMock
 
-from custom_components.colis_prive.diagnostics import (
-    async_get_config_entry_diagnostics,
-)
+from custom_components.colis_prive.diagnostics import async_get_config_entry_diagnostics
+from custom_components.colis_prive.parcels import normalize_parcel
 
-from .payloads import ACTIVE_CODE
+from .payloads import ACTIVE_CODE, FAKE_NAME_FRAGMENT, POSTCODE, active_sample
 
 REDACTED = "**REDACTED**"
 
 
 async def test_diagnostics_redacts_everything_identifying(hass):
     """Diagnostics get pasted into public issues — nothing identifying may survive."""
-    from custom_components.colis_prive.parcels import normalize_parcel
-
-    from .payloads import FAKE_NAME_FRAGMENT, POSTCODE, active_sample
-
     parcel = normalize_parcel(
         active_sample(), include_history=True, country="BE", postal_code=POSTCODE
     )
@@ -56,7 +52,14 @@ async def test_diagnostics_redacts_everything_identifying(hass):
         assert raw[key] == REDACTED, key
 
     dumped = repr(result)
-    for leaked in (ACTIVE_CODE, POSTCODE, "EXAMPLE SHOP", "being delivered", "regional", FAKE_NAME_FRAGMENT):
+    for leaked in (
+        ACTIVE_CODE,
+        POSTCODE,
+        "EXAMPLE SHOP",
+        "being delivered",
+        "regional",
+        FAKE_NAME_FRAGMENT,
+    ):
         assert leaked not in dumped, leaked
     # non-identifying fields survive, or the diagnostics would be useless
     assert incoming["status"] == "out_for_delivery"

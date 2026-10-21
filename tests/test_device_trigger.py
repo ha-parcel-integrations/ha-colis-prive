@@ -1,4 +1,5 @@
 """Tests for Colis Privé device triggers."""
+
 from unittest.mock import AsyncMock
 
 from custom_components.colis_prive.const import DOMAIN

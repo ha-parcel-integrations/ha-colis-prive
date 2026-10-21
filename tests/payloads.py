@@ -3,6 +3,7 @@
 Everything here is invented: the numbers, the sender, the dates and the
 recipient block. The structure mirrors the result panel the parser relies on.
 """
+
 from __future__ import annotations
 
 ACTIVE_CODE = "TEST00000001"
@@ -72,7 +73,10 @@ DATES = ["02/03/2026", "03/03/2026", "03/03/2026", "04/03/2026"]
 def rows_newest_first(lang: str = "en", stages=STAGES_OLDEST_FIRST, dates=DATES):
     """History rows as the page lists them: newest first."""
     pairs = list(zip(dates, stages, strict=True))
-    return [{"date": date, "text": SENTENCES[lang][stage]} for date, stage in reversed(pairs)]
+    return [
+        {"date": date, "text": SENTENCES[lang][stage]}
+        for date, stage in reversed(pairs)
+    ]
 
 
 def result_html(
@@ -157,6 +161,9 @@ def in_transit_sample(code: str = ACTIVE_CODE, lang: str = "en") -> dict:
 def delivered_sample(code: str = DELIVERED_CODE) -> dict:
     """A parcel delivered to the letterbox."""
     sample = parsed(code, lang="en")
-    sample["history"] = [{"date": "05/03/2026", "text": DELIVERED_TEXT}, *sample["history"]]
+    sample["history"] = [
+        {"date": "05/03/2026", "text": DELIVERED_TEXT},
+        *sample["history"],
+    ]
     sample["statusText"] = DELIVERED_TEXT
     return sample

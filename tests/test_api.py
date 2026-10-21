@@ -1,4 +1,5 @@
 """Tests for the Colis Privé page client."""
+
 from unittest.mock import AsyncMock, MagicMock
 
 import aiohttp
@@ -24,7 +25,9 @@ def _session_returning(status: int, body: str = "", headers: dict | None = None)
 
 async def test_get_parcel_parses_the_result_panel():
     session = _session_returning(200, result_html())
-    parcel = await ColisPrivApiClient(session).async_get_parcel(ACTIVE_CODE, POSTCODE, "en")
+    parcel = await ColisPrivApiClient(session).async_get_parcel(
+        ACTIVE_CODE, POSTCODE, "en"
+    )
 
     assert parcel["trackingNumber"] == ACTIVE_CODE
     assert parcel["lang"] == "en"
@@ -42,7 +45,9 @@ async def test_request_is_one_get_with_redirects_off():
     assert kwargs["params"] == {"numColis": f"{ACTIVE_CODE}{POSTCODE}", "lang": "nl"}
 
 
-@pytest.mark.parametrize("location", ["/moncolis/Default.aspx", "/moncolis/default.aspx?x=1"])
+@pytest.mark.parametrize(
+    "location", ["/moncolis/Default.aspx", "/moncolis/default.aspx?x=1"]
+)
 async def test_redirect_to_search_form_is_not_found(location):
     session = _session_returning(302, headers={"Location": location})
     client = ColisPrivApiClient(session)
@@ -80,7 +85,8 @@ async def test_server_errors_raise_with_status(status):
 
 
 @pytest.mark.parametrize(
-    ("header", "expected"), [("120", 120.0), ("Wed, 21 Oct 2026 07:28:00 GMT", None), (None, None)]
+    ("header", "expected"),
+    [("120", 120.0), ("Wed, 21 Oct 2026 07:28:00 GMT", None), (None, None)],
 )
 async def test_429_carries_retry_after(header, expected):
     headers = {"Retry-After": header} if header else {}

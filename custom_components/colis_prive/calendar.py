@@ -1,4 +1,5 @@
 """Calendar platform for the Colis Privé parcel tracker integration."""
+
 from __future__ import annotations
 
 from datetime import datetime, timedelta
@@ -20,17 +21,20 @@ PARALLEL_UPDATES = 0
 _DEFAULT_EVENT_DURATION = timedelta(hours=1)
 
 
-
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ColisPrivConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Colis Privé deliveries calendar from a config entry."""
-    async_add_entities([ColisPrivDeliveriesCalendar(entry.runtime_data.coordinator, entry)])
+    async_add_entities(
+        [ColisPrivDeliveriesCalendar(entry.runtime_data.coordinator, entry)]
+    )
 
 
-class ColisPrivDeliveriesCalendar(CoordinatorEntity[ColisPrivCoordinator], CalendarEntity):
+class ColisPrivDeliveriesCalendar(
+    CoordinatorEntity[ColisPrivCoordinator], CalendarEntity
+):
     """A read-only calendar of expected Colis Privé deliveries.
 
     Each active tracked parcel with a known delivery moment becomes an event.
@@ -60,7 +64,9 @@ class ColisPrivDeliveriesCalendar(CoordinatorEntity[ColisPrivCoordinator], Calen
 
             barcode = parcel.get("barcode") or ""
             sender = parcel.get("sender")
-            summary = sender or (f"Parcel {barcode}" if barcode else "Colis Privé parcel")
+            summary = sender or (
+                f"Parcel {barcode}" if barcode else "Colis Privé parcel"
+            )
             description_parts = [
                 f"Barcode: {barcode}" if barcode else None,
                 f"Status: {parcel.get('status')}" if parcel.get("status") else None,

@@ -1,6 +1,8 @@
 """Tests for the strict result-panel parser."""
+
 import pytest
 
+from custom_components.colis_prive import parser
 from custom_components.colis_prive.parser import (
     ColisPrivParseError,
     clean_text,
@@ -50,7 +52,10 @@ def test_whitespace_br_and_nbsp_are_normalised():
 
 def test_curly_apostrophes_survive_parsing_verbatim():
     rows = [{"date": "04/03/2026", "text": "préparation par l’expéditeur"}]
-    assert parse_result(result_html(rows=rows))["statusText"] == "préparation par l’expéditeur"
+    assert (
+        parse_result(result_html(rows=rows))["statusText"]
+        == "préparation par l’expéditeur"
+    )
 
 
 def test_missing_npai_input_is_none():
@@ -141,8 +146,6 @@ def test_void_tags_never_open_scope():
 
 
 def test_parser_crash_becomes_parse_error(monkeypatch):
-    from custom_components.colis_prive import parser
-
     def _boom(self, data):
         raise AssertionError("boom")
 

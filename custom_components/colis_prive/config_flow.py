@@ -6,7 +6,6 @@ import logging
 import re
 from typing import Any
 
-import voluptuous as vol
 from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
@@ -15,6 +14,7 @@ from homeassistant.config_entries import (
 )
 from homeassistant.core import callback
 from homeassistant.helpers import selector
+import voluptuous as vol
 
 from .const import (
     CONF_COUNTRY,
@@ -83,7 +83,9 @@ def normalize_postcode(value: str) -> str:
 def valid_postcode(value: str, country: str) -> bool:
     """Whether ``value`` has the digit count of ``country``'s postcodes."""
     length = POSTCODE_LENGTHS.get(country)
-    return length is not None and re.fullmatch(rf"\d{{{length}}}", value or "") is not None
+    return (
+        length is not None and re.fullmatch(rf"\d{{{length}}}", value or "") is not None
+    )
 
 
 def _current_parcels(entry: ConfigEntry) -> list[dict[str, str]]:

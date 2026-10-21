@@ -1,6 +1,7 @@
 """Tests for the pure parcel-mapping helpers."""
+
+from datetime import UTC, datetime, timedelta
 import logging
-from datetime import datetime, timedelta, timezone
 
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -53,7 +54,9 @@ from .payloads import (
 @pytest.mark.parametrize("lang", ["fr", "nl", "en"])
 @pytest.mark.parametrize("stage", STAGES_OLDEST_FIRST)
 def test_every_observed_sentence_maps_in_its_own_language(lang, stage):
-    assert map_parcel_status(SENTENCES[lang][stage], lang) == ParcelStatus(EXPECTED[stage])
+    assert map_parcel_status(SENTENCES[lang][stage], lang) == ParcelStatus(
+        EXPECTED[stage]
+    )
 
 
 @pytest.mark.parametrize("lang", ["fr", "nl", "en"])
@@ -77,13 +80,20 @@ def test_overlapping_sentences_keep_their_own_stage():
 
 def test_tables_are_not_translated_or_borrowed():
     """A sentence in another language's table is unknown, not translated."""
-    assert map_parcel_status(SENTENCES["fr"]["out_for_delivery"], "en") == ParcelStatus.UNKNOWN
-    assert map_parcel_status(SENTENCES["en"]["registered"], "nl") == ParcelStatus.UNKNOWN
+    assert (
+        map_parcel_status(SENTENCES["fr"]["out_for_delivery"], "en")
+        == ParcelStatus.UNKNOWN
+    )
+    assert (
+        map_parcel_status(SENTENCES["en"]["registered"], "nl") == ParcelStatus.UNKNOWN
+    )
     assert map_parcel_status(SENTENCES["nl"]["arrived"], "fr") == ParcelStatus.UNKNOWN
 
 
 def test_unknown_language_has_no_table():
-    assert map_parcel_status(SENTENCES["en"]["registered"], "de") == ParcelStatus.UNKNOWN
+    assert (
+        map_parcel_status(SENTENCES["en"]["registered"], "de") == ParcelStatus.UNKNOWN
+    )
 
 
 def test_keyword_tables_match_the_observed_keywords():
@@ -119,9 +129,9 @@ def test_apostrophe_variants_and_spacing_match(apostrophe):
 
 
 def test_matching_ignores_case_and_nbsp():
-    assert map_parcel_status("YOUR PARCEL IS BEING DELIVERED\xa0BY THE DRIVER", "en") == (
-        ParcelStatus.OUT_FOR_DELIVERY
-    )
+    assert map_parcel_status(
+        "YOUR PARCEL IS BEING DELIVERED\xa0BY THE DRIVER", "en"
+    ) == (ParcelStatus.OUT_FOR_DELIVERY)
 
 
 @pytest.mark.parametrize(
@@ -168,7 +178,11 @@ def test_same_sentence_in_another_language_warns_again(caplog):
 
 
 def test_unmapped_current_sentence_falls_back_to_newest_mappable_history(caplog):
-    history = ["Teleported to Mars", SENTENCES["en"]["arrived"], SENTENCES["en"]["registered"]]
+    history = [
+        "Teleported to Mars",
+        SENTENCES["en"]["arrived"],
+        SENTENCES["en"]["registered"],
+    ]
     with caplog.at_level(logging.WARNING):
         status = map_parcel_status("Teleported to Mars", "en", history)
     assert status == ParcelStatus.IN_TRANSIT
@@ -188,8 +202,9 @@ def test_map_event_status_missing_and_unmapped_are_none(caplog):
     with caplog.at_level(logging.WARNING):
         assert map_event_status("Mystery", "en") is None
     assert any("history entry left unmapped" in r.getMessage() for r in caplog.records)
-    assert map_event_status(SENTENCES["fr"]["registered"], "fr") == ParcelStatus.REGISTERED
-
+    assert (
+        map_event_status(SENTENCES["fr"]["registered"], "fr") == ParcelStatus.REGISTERED
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -217,12 +232,24 @@ def test_build_history_orders_same_day_rows_by_lifecycle_not_page_order():
     texts = SENTENCES["fr"]
     rows = [
         {"date": "03/03/2026", "text": texts[stage]}
-        for stage in ("delivered", "out_for_delivery", "taken_over", "arrived", "registered")
+        for stage in (
+            "delivered",
+            "out_for_delivery",
+            "taken_over",
+            "arrived",
+            "registered",
+        )
     ]
     events = build_history(rows, "fr", "BE")
     assert [e["raw_status"] for e in events] == [
         texts[stage]
-        for stage in ("registered", "taken_over", "arrived", "out_for_delivery", "delivered")
+        for stage in (
+            "registered",
+            "taken_over",
+            "arrived",
+            "out_for_delivery",
+            "delivered",
+        )
     ]
 
 
@@ -452,7 +479,14 @@ def test_normalize_delivered_parcel_stamps_delivered_at_from_newest_row():
 def test_normalize_keeps_parsed_fields_in_raw():
     raw = active_sample()
     assert _normalize(raw)["raw"] == raw
-    assert set(raw) == {"sender", "statusText", "history", "npai", "trackingNumber", "lang"}
+    assert set(raw) == {
+        "sender",
+        "statusText",
+        "history",
+        "npai",
+        "trackingNumber",
+        "lang",
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -500,7 +534,7 @@ def _entry(filter_type: str, amount: int) -> MockConfigEntry:
 
 
 def _delivered_pair() -> list[dict]:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     return [
         {"barcode": "RECENT", "delivered_at": (now - timedelta(days=1)).isoformat()},
         {"barcode": "OLD", "delivered_at": (now - timedelta(days=30)).isoformat()},
@@ -531,7 +565,7 @@ def test_delivered_filter_keeps_unparseable_timestamp():
 def test_parse_iso_handles_z_naive_and_garbage():
     assert parse_iso("2026-04-29T13:12:42Z").tzinfo is not None
     # A naive value is assumed UTC so mixed lists still sort.
-    assert parse_iso("2026-04-29T13:12:42").tzinfo == timezone.utc
+    assert parse_iso("2026-04-29T13:12:42").tzinfo == UTC
     assert parse_iso("not-a-date") is None
     assert parse_iso(None) is None
 
@@ -554,13 +588,17 @@ def test_format_dimensions_needs_all_three_axes():
 
 
 def test_blank_history_sentences_are_skipped_in_the_fallback():
-    status = map_parcel_status("Mystery", "en", ["", None, SENTENCES["en"]["registered"]])
+    status = map_parcel_status(
+        "Mystery", "en", ["", None, SENTENCES["en"]["registered"]]
+    )
     assert status == ParcelStatus.REGISTERED
 
 
 @pytest.mark.parametrize("lang", ["fr", "nl", "en"])
 def test_letterbox_delivery_maps_to_delivered_in_every_language(lang):
-    assert map_parcel_status(SENTENCES[lang]["delivered"], lang) == ParcelStatus.DELIVERED
+    assert (
+        map_parcel_status(SENTENCES[lang]["delivered"], lang) == ParcelStatus.DELIVERED
+    )
 
 
 def test_history_fallback_takes_the_furthest_stage_not_the_top_row():

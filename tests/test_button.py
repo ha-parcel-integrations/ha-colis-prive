@@ -1,4 +1,5 @@
 """Tests for the Colis Privé refresh button."""
+
 from unittest.mock import AsyncMock, MagicMock
 
 from custom_components.colis_prive.button import ColisPrivRefreshButton

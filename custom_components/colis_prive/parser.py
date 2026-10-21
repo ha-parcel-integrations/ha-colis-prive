@@ -6,10 +6,11 @@ instead of yielding a partial parcel. The part carrying the recipient's name
 and address is skipped as the reply is read, so that text never reaches a
 variable, a log line or the stored payload.
 """
+
 from __future__ import annotations
 
-import re
 from html.parser import HTMLParser
+import re
 
 PANEL_ID = "ctl00_CDC_pnResultatColis"
 _NPAI_ID_SUFFIX = "hfNPAI"
@@ -32,7 +33,7 @@ def clean_text(value: str) -> str:
 class _Node:
     """One open element on the parser stack."""
 
-    __slots__ = ("tag", "classes", "ident", "role", "skip", "parts")
+    __slots__ = ("classes", "ident", "parts", "role", "skip", "tag")
 
     def __init__(self, tag: str, attrs: dict[str, str]) -> None:
         self.tag = tag
@@ -129,7 +130,11 @@ class _PanelParser(HTMLParser):
         if tag in _VOID_TAGS:
             return
         index = next(
-            (i for i in range(len(self._stack) - 1, -1, -1) if self._stack[i].tag == tag),
+            (
+                i
+                for i in range(len(self._stack) - 1, -1, -1)
+                if self._stack[i].tag == tag
+            ),
             None,
         )
         if index is None:
@@ -168,7 +173,7 @@ def parse_result(html: str) -> dict:
     try:
         parser.feed(html)
         parser.close()
-    except Exception as err:  # noqa: BLE001 - html.parser can raise assorted errors
+    except Exception as err:
         raise ColisPrivParseError("unparseable markup") from err
 
     if not parser.panel_seen:

@@ -3,11 +3,12 @@
 Everything in this module is a **pure function** — no I/O, no Home Assistant
 objects beyond the config entry's options.
 """
+
 from __future__ import annotations
 
+from datetime import UTC, datetime, timedelta
 import logging
 import re
-from datetime import datetime, timedelta, timezone
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -36,6 +37,7 @@ NEW_ISSUE_URL = (
     "https://github.com/ha-parcel-integrations/ha-colis-prive/issues/new"
     "?template=unrecognised_status.yml"
 )
+
 
 def _fold(text: str) -> str:
     """Normalise a sentence for matching: whitespace, apostrophes, case."""
@@ -144,7 +146,9 @@ def map_parcel_status(
     mapped = _match(text, lang)
     if mapped is not None:
         return mapped
-    hits = [hit for earlier in history_texts or [] if (hit := _match_ranked(earlier, lang))]
+    hits = [
+        hit for earlier in history_texts or [] if (hit := _match_ranked(earlier, lang))
+    ]
     if hits:
         mapped = max(hits, key=lambda hit: hit[1])[0]
         _warn_unmapped_status(text, lang, f"reported as '{mapped.value}'")
@@ -177,11 +181,11 @@ def parse_iso(value: str | None) -> datetime | None:
     if not value:
         return None
     try:
-        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        parsed = datetime.fromisoformat(str(value))
     except ValueError:
         return None
     if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=timezone.utc)
+        parsed = parsed.replace(tzinfo=UTC)
     return parsed
 
 
@@ -197,7 +201,7 @@ def to_iso_timestamp(value: Any) -> str | None:
         return None
     if isinstance(value, (int, float)):
         try:
-            return datetime.fromtimestamp(value / 1000, tz=timezone.utc).isoformat()
+            return datetime.fromtimestamp(value / 1000, tz=UTC).isoformat()
         except (OverflowError, OSError, ValueError):
             return None
     return str(value)
@@ -239,7 +243,9 @@ def row_timestamp(date: str, country: str) -> str | None:
         return None
 
 
-def _stage_day(rows: list, lang: str, country: str, status: ParcelStatus) -> datetime | None:
+def _stage_day(
+    rows: list, lang: str, country: str, status: ParcelStatus
+) -> datetime | None:
     """Local midnight of the newest row that maps to ``status``.
 
     Picked by date, not table position: same-day rows are not kept in order.
@@ -393,14 +399,12 @@ def apply_delivered_filter(parcels: list[dict], entry: ConfigEntry) -> list[dict
     shows.
     """
     options = entry.options
-    filter_type = options.get(
-        CONF_DELIVERED_FILTER_TYPE, DEFAULT_DELIVERED_FILTER_TYPE
-    )
+    filter_type = options.get(CONF_DELIVERED_FILTER_TYPE, DEFAULT_DELIVERED_FILTER_TYPE)
     amount = int(
         options.get(CONF_DELIVERED_FILTER_AMOUNT, DEFAULT_DELIVERED_FILTER_AMOUNT)
     )
     if filter_type == "days":
-        cutoff = datetime.now(timezone.utc) - timedelta(days=amount)
+        cutoff = datetime.now(UTC) - timedelta(days=amount)
         return [
             parcel
             for parcel in parcels

@@ -1,8 +1,12 @@
 """Tests for the Colis Privé config and options flow."""
 
+import json
+from pathlib import Path
+
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+import custom_components.colis_prive as pkg
 from custom_components.colis_prive.config_flow import (
     normalize_postcode,
     normalize_tracking_code,
@@ -45,7 +49,14 @@ def test_valid_tracking_code_accepts_every_non_empty_code(code, ok):
 
 @pytest.mark.parametrize(
     ("raw", "clean"),
-    [("1000", "1000"), (" 10 00 ", "1000"), ("L-1234", "1234"), ("b-1000", "1000"), ("75001", "75001"), (None, "")],
+    [
+        ("1000", "1000"),
+        (" 10 00 ", "1000"),
+        ("L-1234", "1234"),
+        ("b-1000", "1000"),
+        ("75001", "75001"),
+        (None, ""),
+    ],
 )
 def test_normalize_postcode(raw, clean):
     assert normalize_postcode(raw) == clean
@@ -97,14 +108,18 @@ async def test_user_flow_strips_the_luxembourg_prefix(hass):
 async def test_user_flow_defaults_to_the_instance_country_when_supported(hass):
     hass.config.country = "BE"
     result = await _start(hass)
-    default = next(k.default() for k in result["data_schema"].schema if k == CONF_COUNTRY)
+    default = next(
+        k.default() for k in result["data_schema"].schema if k == CONF_COUNTRY
+    )
     assert default == "be"
 
 
 async def test_user_flow_defaults_to_france_for_other_countries(hass):
     hass.config.country = "DE"
     result = await _start(hass)
-    default = next(k.default() for k in result["data_schema"].schema if k == CONF_COUNTRY)
+    default = next(
+        k.default() for k in result["data_schema"].schema if k == CONF_COUNTRY
+    )
     assert default == "fr"
 
 
@@ -115,7 +130,9 @@ async def test_invalid_postcode_keeps_the_country_and_shows_an_error(hass):
     )
     assert result["type"] == "form"
     assert result["errors"] == {CONF_POSTAL_CODE: "invalid_postcode"}
-    default = next(k.default() for k in result["data_schema"].schema if k == CONF_COUNTRY)
+    default = next(
+        k.default() for k in result["data_schema"].schema if k == CONF_COUNTRY
+    )
     assert default == "fr"
 
 
@@ -153,11 +170,6 @@ async def test_same_country_and_postcode_twice_aborts(hass):
 
 
 def test_manifest_allows_multiple_hubs():
-    import json
-    from pathlib import Path
-
-    import custom_components.colis_prive as pkg
-
     manifest = json.loads((Path(pkg.__file__).parent / "manifest.json").read_text())
     assert "single_config_entry" not in manifest
 

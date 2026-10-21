@@ -1,8 +1,9 @@
 """Tests for the Colis Privé services (track_parcel / untrack_parcel)."""
+
 from unittest.mock import AsyncMock, patch
 
-import pytest
 from homeassistant.exceptions import ServiceValidationError
+import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.colis_prive.const import (
@@ -12,6 +13,7 @@ from custom_components.colis_prive.const import (
     CONF_TRACKING_CODE,
     DOMAIN,
 )
+from custom_components.colis_prive.services import _resolve_entry
 
 from .payloads import ACTIVE_CODE, OTHER_CODE, active_sample
 
@@ -85,8 +87,6 @@ async def test_track_parcel_without_any_hub_raises(hass):
     entry = await _hub(hass)
     await hass.config_entries.async_remove(entry.entry_id)
     await hass.async_block_till_done()
-    from custom_components.colis_prive.services import _resolve_entry
-
     with pytest.raises(ServiceValidationError, match="not set up"):
         _resolve_entry(hass)
 
@@ -122,7 +122,11 @@ async def test_two_hubs_in_one_country_are_targeted_by_postcode(hass):
     await _call(
         hass,
         "track_parcel",
-        {CONF_TRACKING_CODE: ACTIVE_CODE, CONF_COUNTRY: "BE", CONF_POSTAL_CODE: " 2000 "},
+        {
+            CONF_TRACKING_CODE: ACTIVE_CODE,
+            CONF_COUNTRY: "BE",
+            CONF_POSTAL_CODE: " 2000 ",
+        },
     )
 
     assert _codes(first) == []
@@ -136,7 +140,11 @@ async def test_same_postcode_in_two_countries_is_told_apart_by_country(hass):
     await _call(
         hass,
         "track_parcel",
-        {CONF_TRACKING_CODE: ACTIVE_CODE, CONF_COUNTRY: "lu", CONF_POSTAL_CODE: "L-1234"},
+        {
+            CONF_TRACKING_CODE: ACTIVE_CODE,
+            CONF_COUNTRY: "lu",
+            CONF_POSTAL_CODE: "L-1234",
+        },
     )
 
     assert _codes(belgium) == []
@@ -150,7 +158,11 @@ async def test_unknown_hub_raises(hass):
         await hass.services.async_call(
             DOMAIN,
             "track_parcel",
-            {CONF_TRACKING_CODE: ACTIVE_CODE, CONF_COUNTRY: "BE", CONF_POSTAL_CODE: "3000"},
+            {
+                CONF_TRACKING_CODE: ACTIVE_CODE,
+                CONF_COUNTRY: "BE",
+                CONF_POSTAL_CODE: "3000",
+            },
             blocking=True,
         )
 

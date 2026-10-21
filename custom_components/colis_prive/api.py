@@ -10,6 +10,7 @@ Contract the coordinator relies on:
   ``Retry-After`` in seconds,
 * lets ``aiohttp.ClientError`` propagate untouched.
 """
+
 from __future__ import annotations
 
 import logging
