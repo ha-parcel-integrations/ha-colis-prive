@@ -131,7 +131,7 @@ def _match(text: str | None, lang: str) -> ParcelStatus | None:
 
 
 def map_parcel_status(
-    text: str | None, lang: str, history_texts: list[str] | None = None
+    text: str | None, lang: str, history_texts: list[str | None] | None = None
 ) -> ParcelStatus:
     """Map the current status sentence to a canonical :class:`ParcelStatus`.
 

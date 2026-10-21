@@ -7,6 +7,8 @@ can start tracking a parcel straight from a dashboard.
 
 from __future__ import annotations
 
+from typing import Any
+
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import ServiceValidationError
@@ -29,7 +31,7 @@ from .const import (
 SERVICE_TRACK_PARCEL = "track_parcel"
 SERVICE_UNTRACK_PARCEL = "untrack_parcel"
 
-_HUB_FIELDS = {
+_HUB_FIELDS: dict[Any, Any] = {
     vol.Optional(CONF_COUNTRY): cv.string,
     vol.Optional(CONF_POSTAL_CODE): cv.string,
 }
