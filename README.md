@@ -60,7 +60,7 @@ A custom Home Assistant integration that tracks your [Colis Privé](https://www.
 
 Or click the button below to open it directly in HACS:
 
-[![Open your Home Assistant instance and open this repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=ha-parcel-integrations&repository=ha-colis-prive&category=integration)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=ha-parcel-integrations&repository=ha-colis-prive&category=integration)
 
 ### Manual
 
@@ -68,7 +68,7 @@ Copy `custom_components/colis_prive` into your `config/custom_components/` folde
 
 ## Configuration
 
-[![Open your Home Assistant instance and start setting up this integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=colis_prive)
+[![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=colis_prive)
 
 Or set it up by hand: add the integration via **Settings → Devices & Services → Add Integration → Colis Privé**, then choose the country and the postal code of the address the parcels are delivered to. Nothing is contacted during setup.
 
