@@ -122,6 +122,7 @@ Standard HA removal applies: **Settings → Devices & Services → Colis Privé 
 | `sensor.colis_prive_<postal code>_incoming_parcels` | Number of active tracked parcels, full list under the `parcels` attribute |
 | `sensor.colis_prive_<postal code>_parcel_<code>` | One per tracked parcel; state is the canonical status, attributes carry the full normalised parcel |
 | `sensor.colis_prive_<postal code>_next_delivery` | The earliest expected delivery day among parcels out for delivery (Colis Privé gives no time of day) |
+| `sensor.colis_prive_<postal code>_en_route_to_pickup_point` | Incoming parcels on their way to a pickup point that have not arrived yet |
 | `sensor.colis_prive_<postal code>_awaiting_pickup` | Incoming parcels that are ready to collect at a pickup point |
 | `sensor.colis_prive_<postal code>_delivered_parcels` | Recently delivered parcels (see the retention option) |
 | `calendar.colis_prive_<postal code>_deliveries` | Read-only calendar of expected deliveries, no extra API calls |
