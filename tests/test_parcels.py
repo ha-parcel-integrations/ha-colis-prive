@@ -100,6 +100,7 @@ def test_keyword_tables_match_the_observed_keywords():
     assert {lang: [k for k, _ in table] for lang, table in _KEYWORDS.items()} == {
         "fr": [
             "livré en boîte aux lettres",
+            "livré avec signature",
             "en cours de distribution",
             "arrivé sur notre agence régionale",
             "pris en charge par Colis Privé",
@@ -107,6 +108,7 @@ def test_keyword_tables_match_the_observed_keywords():
         ],
         "nl": [
             "in de brievenbus bezorgd",
+            "pakket bezorgd",
             "onderweg naar jou",
             "toegekomen bij onze regionale bezorgpartner",
             "nationaal platform",
@@ -114,12 +116,27 @@ def test_keyword_tables_match_the_observed_keywords():
         ],
         "en": [
             "delivered in letterbox",
+            "delivered with signature",
             "being delivered by the driver",
             "arrived at our regional distribution office",
             "well received by a Colis Privé branch",
             "prepared by your webmerchant",
         ],
     }
+
+
+@pytest.mark.parametrize(
+    ("lang", "text"),
+    [
+        ("fr", "Votre Colis a été livré avec signature"),
+        ("nl", "Pakket bezorgd"),
+        ("en", "Your parcel has been delivered with signature"),
+    ],
+)
+def test_delivery_with_signature_is_delivered(lang, text):
+    """In-person delivery, captured from a real page in each language."""
+    history = [text, SENTENCES[lang]["out_for_delivery"]]
+    assert map_parcel_status(text, lang, history) == ParcelStatus.DELIVERED
 
 
 @pytest.mark.parametrize("apostrophe", ["'", "\u2019", "\u2018", "\u02bc"])
