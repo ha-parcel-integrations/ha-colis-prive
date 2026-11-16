@@ -83,8 +83,8 @@ carrier; it validates the postcode length and picks the timezone.
   the matched keyword's lifecycle rank (each table is ordered last stage
   first). An unmapped row inherits the rank of the row before it. The history
   fallback likewise takes the furthest stage, not the top row.
-- **Unobserved sentences.** Only letterbox delivery maps to `delivered`.
-  In-person and neighbour delivery, pickup-point, failed-attempt and return
+- **Unobserved sentences.** Letterbox and signed (in-person) delivery map to
+  `delivered`. Neighbour delivery, pickup-point, failed-attempt and return
   sentences have not been seen. `delivered_at` is the delivered row's date at
   local midnight. An unmapped sentence falls back to the furthest mappable
   history stage and logs a one-shot WARNING naming
