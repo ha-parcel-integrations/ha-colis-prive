@@ -101,6 +101,7 @@ def test_keyword_tables_match_the_observed_keywords():
         "fr": [
             "livré en boîte aux lettres",
             "livré avec signature",
+            "tenté de livrer",
             "en cours de distribution",
             "arrivé sur notre agence régionale",
             "pris en charge par Colis Privé",
@@ -109,6 +110,7 @@ def test_keyword_tables_match_the_observed_keywords():
         "nl": [
             "in de brievenbus bezorgd",
             "pakket bezorgd",
+            "proberen te leveren",
             "onderweg naar jou",
             "toegekomen bij onze regionale bezorgpartner",
             "nationaal platform",
@@ -117,6 +119,7 @@ def test_keyword_tables_match_the_observed_keywords():
         "en": [
             "delivered in letterbox",
             "delivered with signature",
+            "tried to deliver",
             "being delivered by the driver",
             "arrived at our regional distribution office",
             "well received by a Colis Privé branch",
@@ -137,6 +140,36 @@ def test_delivery_with_signature_is_delivered(lang, text):
     """In-person delivery, captured from a real page in each language."""
     history = [text, SENTENCES[lang]["out_for_delivery"]]
     assert map_parcel_status(text, lang, history) == ParcelStatus.DELIVERED
+
+
+FAILED_ATTEMPT = {
+    "fr": "Nous avons tenté de livrer votre colis.",
+    "nl": (
+        "Wij hebben jouw pakket proberen te leveren, maar dat is niet gelukt. "
+        "Klik hieronder om een nieuwe leveringspoging aan te vragen."
+    ),
+    "en": "We have tried to deliver your parcel.",
+}
+
+
+@pytest.mark.parametrize("lang", ["fr", "nl", "en"])
+def test_failed_delivery_attempt_is_a_problem(lang):
+    """Captured from a real page in each language."""
+    text = FAILED_ATTEMPT[lang]
+    folded = _fold(text)
+    assert sum(keyword in folded for keyword, _ in parcels._TABLES[lang]) == 1
+    history = [text, SENTENCES[lang]["out_for_delivery"]]
+    assert map_parcel_status(text, lang, history) == ParcelStatus.PROBLEM
+
+
+@pytest.mark.parametrize("lang", ["fr", "nl", "en"])
+def test_delivery_after_a_failed_attempt_is_delivered(lang):
+    history = [
+        SENTENCES[lang]["delivered"],
+        FAILED_ATTEMPT[lang],
+        SENTENCES[lang]["out_for_delivery"],
+    ]
+    assert map_parcel_status("unmapped", lang, history) == ParcelStatus.DELIVERED
 
 
 @pytest.mark.parametrize("apostrophe", ["'", "\u2019", "\u2018", "\u02bc"])

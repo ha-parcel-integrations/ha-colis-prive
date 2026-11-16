@@ -140,9 +140,10 @@ The `status` field is the carrier-agnostic enum shared by the whole integration 
 | `in_transit` | Taken over by Colis Privé, or at the regional distribution office |
 | `out_for_delivery` | With the courier today |
 | `delivered` | Delivered to the letterbox, or in person with a signature |
+| `problem` | The courier tried to deliver but could not |
 | `unknown` | Not found yet (see Troubleshooting), or a message that is not recognised yet |
 
-`at_pickup_point`, `returning` and `problem` exist in the shared format but are not produced yet: those Colis Privé messages have not been observed, and neither has delivery to a neighbour. They are added to the map as soon as they are seen.
+`at_pickup_point` and `returning` exist in the shared format but are not produced yet: those Colis Privé messages have not been observed, and neither has delivery to a neighbour. They are added to the map as soon as they are seen.
 
 The carrier's own human-readable text is always available as `raw_status`.
 
@@ -189,7 +190,7 @@ logger:
 ## Troubleshooting
 
 - **A parcel shows `unknown`** — Colis Privé answers the same way for a number it has not received yet, a wrong number and a wrong postal code, so these cannot be told apart. A merchant often prints the label days before the first scan; the parcel picks up automatically once Colis Privé has it. Check that the hub's postal code is the delivery address's, and that the number was entered without the postal code attached.
-- **A parcel looks stuck** — only the letterbox and signed delivery messages are known so far; delivery to a neighbour, pickup-point, failed-delivery and return messages have not been observed yet. An unrecognised message keeps the last recognised status and logs a warning.
+- **A parcel looks stuck** — only the letterbox and signed delivery messages and the failed-attempt message are known so far; delivery to a neighbour, pickup-point and return messages have not been observed yet. An unrecognised message keeps the last recognised status and logs a warning.
 - **A status logs "Unrecognised Colis Privé status"** — please [open an issue](https://github.com/ha-parcel-integrations/ha-colis-prive/issues/new?template=unrecognised_status.yml) with the logged line (it names the language) so the mapping can be extended.
 - **Updates fail after working before** — if Colis Privé changes how its tracking answers, the integration stops updating and keeps the last data instead of guessing. Open an issue.
 

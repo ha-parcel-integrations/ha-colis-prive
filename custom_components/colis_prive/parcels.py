@@ -61,6 +61,7 @@ _KEYWORDS: dict[str, tuple[tuple[str, ParcelStatus], ...]] = {
     "fr": (
         ("livré en boîte aux lettres", ParcelStatus.DELIVERED),
         ("livré avec signature", ParcelStatus.DELIVERED),
+        ("tenté de livrer", ParcelStatus.PROBLEM),
         ("en cours de distribution", ParcelStatus.OUT_FOR_DELIVERY),
         ("arrivé sur notre agence régionale", ParcelStatus.IN_TRANSIT),
         ("pris en charge par Colis Privé", ParcelStatus.IN_TRANSIT),
@@ -69,6 +70,7 @@ _KEYWORDS: dict[str, tuple[tuple[str, ParcelStatus], ...]] = {
     "nl": (
         ("in de brievenbus bezorgd", ParcelStatus.DELIVERED),
         ("pakket bezorgd", ParcelStatus.DELIVERED),
+        ("proberen te leveren", ParcelStatus.PROBLEM),
         ("onderweg naar jou", ParcelStatus.OUT_FOR_DELIVERY),
         ("toegekomen bij onze regionale bezorgpartner", ParcelStatus.IN_TRANSIT),
         ("nationaal platform", ParcelStatus.IN_TRANSIT),
@@ -77,6 +79,7 @@ _KEYWORDS: dict[str, tuple[tuple[str, ParcelStatus], ...]] = {
     "en": (
         ("delivered in letterbox", ParcelStatus.DELIVERED),
         ("delivered with signature", ParcelStatus.DELIVERED),
+        ("tried to deliver", ParcelStatus.PROBLEM),
         ("being delivered by the driver", ParcelStatus.OUT_FOR_DELIVERY),
         ("arrived at our regional distribution office", ParcelStatus.IN_TRANSIT),
         ("well received by a Colis Privé branch", ParcelStatus.IN_TRANSIT),

@@ -84,8 +84,8 @@ carrier; it validates the postcode length and picks the timezone.
   first). An unmapped row inherits the rank of the row before it. The history
   fallback likewise takes the furthest stage, not the top row.
 - **Unobserved sentences.** Letterbox and signed (in-person) delivery map to
-  `delivered`. Neighbour delivery, pickup-point, failed-attempt and return
-  sentences have not been seen. `delivered_at` is the delivered row's date at
+  `delivered`, a failed delivery attempt to `problem`. Neighbour delivery,
+  pickup-point and return sentences have not been seen. `delivered_at` is the delivered row's date at
   local midnight. An unmapped sentence falls back to the furthest mappable
   history stage and logs a one-shot WARNING naming
   the language, even when the fallback succeeds, so the missing sentence
