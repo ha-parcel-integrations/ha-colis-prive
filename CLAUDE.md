@@ -35,10 +35,11 @@ you act in one of these areas:
   summary+diagnostic sensors. Add a new non-parcel sensor's unique_id to the set.
 - **Per-parcel sensors are removed by the summary sensor** via
   `entity_registry.async_remove` (self-removal races and leaves ghosts).
-- **The optional pickup-point summaries are a pair.** A carrier that can tell
-  a parcel is destined for a pickup point exposes
-  `en_route_to_pickup_point` for `pickup is true` before it arrives; one that
-  can reach `ParcelStatus.AT_PICKUP_POINT` also exposes `awaiting_pickup`.
+- **The pickup-point summaries are a pair.** A carrier that can deliver to a
+  pickup point or locker exposes both `en_route_to_pickup_point` and
+  `awaiting_pickup`, even before a real parcel has shown the status or flag
+  (they read 0 until then; record it in `PENDING_*`). A carrier without pickup
+  points exposes neither and keeps `pickup` constantly False.
   See *Parcel contract* in `CONVENTIONS.md`. Say "pickup point", not
   "ServicePoint"/"parcel shop"/"locker", for the generic concept; the
   example carrier demonstrates both canonical sensors.
@@ -91,9 +92,10 @@ carrier; it validates the postcode length and picks the timezone.
   the language, even when the fallback succeeds, so the missing sentence
   surfaces. A new sentence goes into all three tables together, from a real
   capture.
-- **Delivery window.** Only while `out_for_delivery`: `planned_from` and
-  `planned_to` are 00:00:00 and 23:59:59 local of the newest out-for-delivery
-  row's date (that status means "on the vehicle today"; no time is given).
+- **Delivery window.** Only while `out_for_delivery`, built with
+  `planned_window` from the newest out-for-delivery row's date in the hub
+  country's zone: `planned_from` and `planned_to` are 00:00:00 and 23:59:59
+  local of that day (that status means "on the vehicle today"; no time is given).
   Never for `in_transit`, which can span days, and `None` once delivered. Same narrow pattern as ha-ceska-posta. `delivered_at` likewise
   comes from the delivered row's date, never from the top table row.
 - **Fields that are `None`:** `receiver`, `weight`, `dimensions` on purpose;
@@ -102,9 +104,13 @@ carrier; it validates the postcode length and picks the timezone.
   `history`.
 - **No outgoing parcels.** Colis Privé has no consumer sending surface, so
   there is no direction split; this is a decision, not a gap.
-- **Pickup-point sensors** (`en_route_to_pickup_point`, `awaiting_pickup`)
-  are kept from the template and stay at zero until a pickup-point sentence is
-  captured and mapped.
+- **Pickup point.** No pickup-point sentence has been seen, so `pickup` is
+  `False` until one maps to `at_pickup_point`; from then on it stays `True`
+  (the contract's helper checks the history rows too, so it survives
+  collection). Both pickup sensors exist: `en_route_to_pickup_point`
+  (pickup parcels not yet at the point, excluding returning) and
+  `awaiting_pickup`. Pending: both read zero until a pickup-point sentence is
+  mapped to `at_pickup_point`, since none has been seen yet.
 - **Diagnostics** redact the code, postcode, request URL, every status and
   history value, the sender and the undeliverable-address flag.
 
