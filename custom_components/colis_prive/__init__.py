@@ -11,6 +11,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import ColisPrivApiClient
 from .const import PLATFORMS
+from .contents import ContentsStore
 from .coordinator import ColisPrivCoordinator
 from .services import async_setup_services, async_unload_services
 
@@ -39,6 +40,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ColisPrivConfigEntry) ->
     # cleanly (it logs a warning and half-sets-up the entry); doing the first
     # refresh here lets a transient failure fail the whole entry so HA retries
     # it with backoff.
+    await coordinator.contents_store.async_load()
     await coordinator.async_config_entry_first_refresh()
 
     entry.runtime_data = ColisPrivData(client=client, coordinator=coordinator)
@@ -71,3 +73,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ColisPrivConfigEntry) -
         return False
     async_unload_services(hass)
     return True
+
+
+async def async_remove_entry(hass: HomeAssistant, entry: ColisPrivConfigEntry) -> None:
+    """Delete the entry's stored contents."""
+    await ContentsStore(hass, entry.entry_id).async_remove()

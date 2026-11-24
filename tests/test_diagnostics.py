@@ -16,6 +16,7 @@ async def test_diagnostics_redacts_everything_identifying(hass):
     parcel = normalize_parcel(
         active_sample(), include_history=True, country="BE", postal_code=POSTCODE
     )
+    parcel["contents"] = "Running shoes"
     entry = MagicMock()
     entry.options = {
         "country": "BE",
@@ -45,7 +46,7 @@ async def test_diagnostics_redacts_everything_identifying(hass):
     assert result["entry_options"]["country"] == "BE"
 
     incoming = result["incoming"][0]
-    for key in ("barcode", "sender", "url", "raw_status", "history"):
+    for key in ("barcode", "sender", "contents", "url", "raw_status", "history"):
         assert incoming[key] == REDACTED, key
     raw = incoming["raw"]
     for key in ("trackingNumber", "sender", "statusText", "history", "npai"):

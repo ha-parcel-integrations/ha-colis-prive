@@ -37,6 +37,17 @@ def _cal(data):
     return ColisPrivDeliveriesCalendar(_coordinator(data), _entry())
 
 
+def test_title_prefers_contents_then_sender_then_fallback():
+    with_contents = {**_parcel("A", planned_from="2099-01-01T10:00:00Z")}
+    with_contents["contents"] = "Running shoes"
+    assert _cal([with_contents]).event.summary == "Running shoes"
+
+    no_sender = {**_parcel("B", planned_from="2099-01-01T10:00:00Z"), "sender": None}
+    assert _cal([no_sender]).event.summary == "Parcel B"
+    no_code = {**no_sender, "barcode": None}
+    assert _cal([no_code]).event.summary == "Colis Privé parcel"
+
+
 def test_event_returns_earliest_upcoming():
     cal = _cal(
         [

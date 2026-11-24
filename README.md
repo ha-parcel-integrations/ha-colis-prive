@@ -164,8 +164,11 @@ Every payload is the full normalised parcel plus the hub's `device_id`. Events a
 
 | Service | Fields | Description |
 |---|---|---|
-| `colis_prive.track_parcel` | `tracking_code`, `country`, `postal_code` | Start tracking a parcel. `country` and `postal_code` choose the hub; leave them out with one hub, and give both with several (Belgium and Luxembourg share four-digit postal codes). |
+| `colis_prive.track_parcel` | `tracking_code`, `country`, `postal_code`, `contents` (optional) | Start tracking a parcel, optionally noting what is in it. `country` and `postal_code` choose the hub; leave them out with one hub, and give both with several (Belgium and Luxembourg share four-digit postal codes). |
 | `colis_prive.untrack_parcel` | `tracking_code`, `country`, `postal_code` | Stop tracking a parcel. The hub is found from the code; give `country` and `postal_code` only if the same code is tracked in more than one hub. |
+| `colis_prive.update_contents` | `tracking_code`, `contents`, `config_entry_id` (optional) | Set what is in a parcel, tracked or not; an empty `contents` clears it. It goes to every hub that lists the code; name one with `config_entry_id` (needed for a code no hub lists yet). |
+
+The `contents` text you set titles the parcel's calendar event and shows on the next-delivery sensor.
 
 ## Examples
 

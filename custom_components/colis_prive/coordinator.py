@@ -36,6 +36,7 @@ from .const import (
     STAGGER_MINUTES,
     ParcelStatus,
 )
+from .contents import ContentsStore, normalize_code
 from .parcels import (
     apply_delivered_filter,
     normalize_parcel,
@@ -158,6 +159,8 @@ class ColisPrivCoordinator(DataUpdateCoordinator[list[dict]]):
             update_interval=timedelta(minutes=HOT_INTERVAL_MINUTES),
         )
         self._client = client
+        self.contents_store = ContentsStore(hass, entry.entry_id)
+        self._known_codes: frozenset[str] = frozenset()
         self.delivered: list[dict] = []
         # tracking_code -> last successful raw payload, so a transient fetch
         # failure or a not-found blip keeps the parcel visible instead of
@@ -195,6 +198,18 @@ class ColisPrivCoordinator(DataUpdateCoordinator[list[dict]]):
     def current_tier_minutes(self) -> int | None:
         """Tier minutes computed on the last refresh (diagnostics only)."""
         return self._current_tier_minutes
+
+    @property
+    def known_codes(self) -> frozenset[str]:
+        """Every code this hub lists, tracked ones without data yet included."""
+        return self._known_codes
+
+    def _apply_contents(self, parcel: dict, code: object) -> dict:
+        """Put the user's own contents text over the carrier's, when there is one."""
+        user_value = self.contents_store.get(code)
+        if user_value is not None:
+            parcel["contents"] = user_value
+        return parcel
 
     @property
     def delivered_codes(self) -> set[str]:
@@ -341,15 +356,26 @@ class ColisPrivCoordinator(DataUpdateCoordinator[list[dict]]):
         entries = [
             (
                 code,
-                normalize_parcel(
-                    raw,
-                    include_history=include_history,
-                    country=country,
-                    postal_code=postal_code,
+                self._apply_contents(
+                    normalize_parcel(
+                        raw,
+                        include_history=include_history,
+                        country=country,
+                        postal_code=postal_code,
+                    ),
+                    code,
                 ),
             )
             for code, raw in raws_by_code.items()
         ]
+        self._known_codes = frozenset(
+            normalize_code(value)
+            for value in (
+                *codes,
+                *(parcel.get("barcode") for _, parcel in entries),
+            )
+            if value
+        )
         active = [parcel for _, parcel in entries if not parcel["delivered"]]
         delivered = [parcel for _, parcel in entries if parcel["delivered"]]
         # Rebuilt fresh from this cycle's data — a code whose payload just

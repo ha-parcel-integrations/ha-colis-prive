@@ -19,6 +19,7 @@ TO_REDACT = {
     "barcode",
     "sender",
     "receiver",
+    "contents",
     "url",
     "raw_status",
     # hub address

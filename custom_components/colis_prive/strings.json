@@ -110,6 +110,10 @@
         "postal_code": {
           "name": "Postal code",
           "description": "Postal code of the hub. Required when several hubs are set up, because Belgium and Luxembourg share four-digit codes."
+        },
+        "contents": {
+          "name": "Contents",
+          "description": "What is in the parcel, in your own words. Calling this again for a tracked parcel replaces it; an empty text clears it."
         }
       }
     },
@@ -128,6 +132,24 @@
         "postal_code": {
           "name": "Postal code",
           "description": "Postal code of the hub."
+        }
+      }
+    },
+    "update_contents": {
+      "name": "Update parcel contents",
+      "description": "Set what is in a parcel, in your own words, for a tracking code. An empty text clears it.",
+      "fields": {
+        "tracking_code": {
+          "name": "Tracking code",
+          "description": "The Colis Privé tracking code."
+        },
+        "contents": {
+          "name": "Contents",
+          "description": "What is in the parcel, in your own words. An empty text clears it."
+        },
+        "config_entry_id": {
+          "name": "Account",
+          "description": "The account to store this for. Needed when no account lists the code yet."
         }
       }
     }
@@ -177,6 +199,11 @@
       "parcel": {
         "name": "Parcel {barcode}"
       }
+    }
+  },
+  "exceptions": {
+    "update_contents_entry_required": {
+      "message": "No account lists this code. Choose the account to store it for."
     }
   }
 }
